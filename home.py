@@ -1,5 +1,5 @@
 import streamlit as st
-from st_snowauth import snowauth_session
+from snow_oauth import snowauth_session 
 
 st.set_page_config(
     page_title="SNOWBEAR", page_icon="bear", initial_sidebar_state="auto"
