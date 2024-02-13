@@ -47,7 +47,8 @@ def show_auth_link(config, label):
     if st.query_params.to_dict():
         qpcache = qparms_cache(state_parameter)
         qpcache.update(st.query_params.to_dict())
-    st.markdown(f'<a href="{request_url}" target="_self">{label}</a>', unsafe_allow_html=True)
+    st.link_button(label, url = request_url, type='primary')
+    # st.markdown(f'<a href="{request_url}" target="_self">{label}</a>', unsafe_allow_html=True)
     st.stop()
 
 def snowauth_session(config=None, label="Login to Snowflake"):

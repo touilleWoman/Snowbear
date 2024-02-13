@@ -5,7 +5,8 @@ st.set_page_config(
     page_title="SNOWBEAR", page_icon="bear", initial_sidebar_state="auto"
 )
 
+st.header("Bienvenue à votre SNOW BEAR")
 
-st.markdown("## This (and above) is always seen")
-session = snowauth_session(label="Click to login to Snowflake")
-st.markdown("## This (and below) is only seen after authentication")
+session = snowauth_session(label="login to Snowflake")
+st.success('Authentification réussie !')
+
