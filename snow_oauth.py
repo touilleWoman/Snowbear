@@ -8,7 +8,10 @@ _DEFAULT_SECRET_KEY = "snowauth"
 def logout():
     if "snowpark_session" in st.session_state:
         st.session_state["snowpark_session"].close()
-        del st.session_state["snowpark_session"]
+        for key in st.session_state.keys():
+            del st.session_state[key]
+        st.query_params.pop("code")
+        st.query_params.pop("state")
 
 
 def validate_config(config):
@@ -71,7 +74,6 @@ def snowauth_session(config=None, label="Login to Snowflake"):
     Returns: None ; the snowpark session generated is stored in streamlit: st.session_state.snowpark_session
 
     """
-
 
     # if not config, use default config in ~/.streamlit/secrets.toml
     if not config:
