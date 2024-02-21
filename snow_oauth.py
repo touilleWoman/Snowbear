@@ -76,7 +76,7 @@ class SnowOauth:
         else:
             auth_code = st.query_params.get("code")
             returned_state = st.query_params.get("state")
-            print(f"returned state{returned_state}")
+            # print(f"returned state{returned_state}")
             # if returned_state != st.session_state.expected_state:
             #     st.error("CSRF Error: State mismatch. This may be a security threat.")
             #     st.stop()
@@ -109,12 +109,16 @@ class SnowOauth:
                 client_id=self.config["client_id"],
                 client_secret=self.config["client_secret"],
                 redirect_uri=self.config["redirect_uri"],
-                role=self.config["role"],
             )
+            if 'role' in self.config:
+                scope = f"session:role:{self.config['role']}"
+                oauth.scope = scope
+
             authorization_url, expected_state = oauth.create_authorization_url(
                 self.config["authorization_endpoint"]
             )
             st.session_state.authorization_url = authorization_url
+            print(authorization_url)
         # !!! st.session_state will be cleared out when this button get clicked(page redirection)
         st.link_button(
             self.label, url=st.session_state.authorization_url, type="primary"
