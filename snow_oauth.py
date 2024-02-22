@@ -37,6 +37,7 @@ class SnowOauth:
     !!!the snowpark session generated is stored in streamlit: st.session_state.snowpark_session
 
     """
+
     def __init__(self, label="Login to Snowflake", config=None) -> None:
         """
         Initializes a SnowOauth instance with the specified label and configuration.
@@ -74,8 +75,8 @@ class SnowOauth:
         if "code" not in st.query_params.keys():
             self.login_snowflake()
         else:
-            auth_code = st.query_params.get("code")
-            returned_state = st.query_params.get("state")
+            auth_code = st.query_params.pop("code")
+            returned_state = st.query_params.pop("state")
             # print(f"returned state{returned_state}")
             # if returned_state != st.session_state.expected_state:
             #     st.error("CSRF Error: State mismatch. This may be a security threat.")
@@ -110,7 +111,7 @@ class SnowOauth:
                 client_secret=self.config["client_secret"],
                 redirect_uri=self.config["redirect_uri"],
             )
-            if 'role' in self.config:
+            if "role" in self.config:
                 scope = f"session:role:{self.config['role']}"
                 oauth.scope = scope
 
