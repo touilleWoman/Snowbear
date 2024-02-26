@@ -1,6 +1,6 @@
 import streamlit as st
 from snow_oauth import SnowOauth
-import gettext
+from charge_translations import charge_translations
 
 if "snowpark_session" in st.session_state:
     sidebar_state = "expanded"
@@ -14,29 +14,19 @@ st.set_page_config(
     initial_sidebar_state=sidebar_state,
 )
 
-_ = gettext.gettext
-
+if 'translations' not in st.session_state:
+    st.session_state.translations = {}
 
 col1, col2 = st.columns([8, 1])
 with col2:
-    selected_lang = 'fr'
-    selected_lang = st.selectbox('', ['en', 'fr'])
-    if selected_lang == "en":
-        localizator = gettext.translation(
-            "messages", localedir="locales", languages=[selected_lang]
-        )
-        localizator.install()
-        _ = localizator.gettext
+    # default value will be 'fr' without selection
+    selected_lang = st.selectbox("🌐", ["fr", "en"])
 
-
-
-
-
-
-
+translations = charge_translations(selected_lang)
+st.session_state.translations = translations
 
 with col1:
-    st.header(_("Bienvenue à votre SNOW BEAR"))
+    st.header(translations["greeting"])
     st.button("refresh")
 
 
@@ -46,7 +36,7 @@ def logout():
         st.session_state.clear()
         st.cache_data.clear()
         st.query_params.clear()
-        st.success(_("Déconnecté avec succès."))
+        st.success(translations["disconnected"])
 
 
 def sidebar():
@@ -54,13 +44,13 @@ def sidebar():
     user = session.sql("SELECT CURRENT_USER()").to_pandas()["CURRENT_USER()"].values[0]
     role = session.sql("SELECT CURRENT_ROLE()").to_pandas()["CURRENT_ROLE()"].values[0]
     with st.sidebar:
-        st.write(_("Utilisateur: ") + user)
-        st.write(_("Role: ") + role)
-        st.button(_("Déconnexion"), on_click=logout)
+        st.write(translations["show_user"] + user)
+        st.write(translations["show_role"] + role)
+        st.button(translations["logout"], on_click=logout)
 
 
 if "snowpark_session" not in st.session_state:
-    label = _("Se connecter à Snowflake")
+    label = translations["con_snowflake"]
     oauth = SnowOauth(label=label)
     oauth.start_session()
 else:

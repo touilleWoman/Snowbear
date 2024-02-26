@@ -119,7 +119,6 @@ class SnowOauth:
                 self.config["authorization_endpoint"]
             )
             st.session_state.authorization_url = authorization_url
-            print(authorization_url)
         # !!! st.session_state will be cleared out when this button get clicked(page redirection)
         st.link_button(
             self.label, url=st.session_state.authorization_url, type="primary"
