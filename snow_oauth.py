@@ -76,11 +76,12 @@ class SnowOauth:
             self.login_snowflake()
         else:
             auth_code = st.query_params.pop("code")
-            returned_state = st.query_params.pop("state")
-            # print(f"returned state{returned_state}")
+            _returned_state = st.query_params.pop("state")
+            # it would be better if we check :
             # if returned_state != st.session_state.expected_state:
             #     st.error("CSRF Error: State mismatch. This may be a security threat.")
             #     st.stop()
+            # but the problem is, session_state got cleaned up after oauth, try to find a solution later 
 
             token = self.get_access_token(auth_code)
 
@@ -94,7 +95,6 @@ class SnowOauth:
                     snow_configs
                 ).create()
                 st.success("Snowpark session start now !")
-                st.write(st.session_state.snowpark_session)
                 st.rerun()
             except Exception as e:
                 st.error(f"Error connecting to Snowflake: \n{str(e)}")

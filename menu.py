@@ -4,10 +4,10 @@ import streamlit as st
 def logout():
     if "snowpark_session" in st.session_state:
         st.session_state["snowpark_session"].close()
+        st.success(st.session_state.translations["disconnected"])
         st.session_state.clear()
         st.cache_data.clear()
         st.query_params.clear()
-        st.success(st.session_state.translations["disconnected"])
 
 
 def show_user_and_role():

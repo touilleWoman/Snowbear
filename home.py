@@ -1,7 +1,8 @@
 import streamlit as st
-from snow_oauth import SnowOauth
+
 from charge_translations import charge_translations
 from menu import menu
+from snow_oauth import SnowOauth
 
 if "snowpark_session" in st.session_state:
     sidebar_state = "expanded"
@@ -14,6 +15,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state=sidebar_state,
 )
+
 
 if "translations" not in st.session_state:
     st.session_state.translations = {}
