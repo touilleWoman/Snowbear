@@ -1,5 +1,21 @@
 import streamlit as st
 
+from charge_translations import charge_translations
+from menu import menu
+
+st.set_page_config(page_title="Users", layout="wide", initial_sidebar_state="auto")
+
+menu()
+
+_col1, col2 = st.columns([8, 1])
+with col2:
+    # default value will be 'fr' without selection
+    selected_lang = st.selectbox("🌐", ["fr", "en"])
+
+
+translations = charge_translations(selected_lang)
+st.session_state.translations = translations
+
 
 @st.cache_data
 def load_tata():
@@ -9,7 +25,6 @@ def load_tata():
 
 
 if "snowpark_session" in st.session_state:
-    st.set_page_config(page_title="Users", layout="wide")
     st.subheader(st.session_state.translations["users"])
     df = load_tata()
     # Display tables in Streamlit

@@ -6,3 +6,6 @@ con_snowflake,Sign in to Snowflake
 show_user,"User: "
 show_role,"Role: "
 users,Users
+roles,Roles
+databases, Databases
+projects_list, List of projects
