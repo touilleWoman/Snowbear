@@ -1,8 +1,8 @@
 import streamlit as st
-
 from charge_translations import charge_translations
 from menu import menu
 from snow_oauth import SnowOauth
+from select_lang import select_lang
 
 if "snowpark_session" in st.session_state:
     sidebar_state = "expanded"
@@ -17,17 +17,32 @@ st.set_page_config(
 )
 
 
+
+
+
+
 if "translations" not in st.session_state:
     st.session_state.translations = {}
 
+
+
+
 _col1, col2 = st.columns([8, 1])
 with col2:
-    # default value will be 'fr' without selection
-    selected_lang = st.selectbox("🌐", ["fr", "en"])
+    selected_lang = select_lang()
+    # selected_lang = st.selectbox("🌐", ["fr", "en"])
 
 
 translations = charge_translations(selected_lang)
 st.session_state.translations = translations
+
+
+
+
+
+
+
+
 
 st.header(translations["greeting"])
 st.button("refresh")
