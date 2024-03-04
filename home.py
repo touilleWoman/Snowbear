@@ -29,8 +29,8 @@ if "translations" not in st.session_state:
 
 _col1, col2 = st.columns([8, 1])
 with col2:
-    selected_lang = select_lang()
-    # selected_lang = st.selectbox("🌐", ["fr", "en"])
+    # selected_lang = select_lang()
+    selected_lang = st.selectbox("🌐", ["fr", "en"])
 
 
 translations = charge_translations(selected_lang)
