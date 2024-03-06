@@ -1,9 +1,9 @@
 import streamlit as st
-
+import snowflake.connector
 
 def logout():
-    if "snowpark_session" in st.session_state:
-        st.session_state["snowpark_session"].close()
+    if "snow_connector" in st.session_state:
+        st.session_state["snow_connector"].close()
         st.success(st.session_state.translations["disconnected"])
         st.session_state.clear()
         st.cache_data.clear()
@@ -11,9 +11,18 @@ def logout():
 
 
 def show_user_and_role():
-    session = st.session_state.snowpark_session
-    user = session.sql("SELECT CURRENT_USER()").to_pandas()["CURRENT_USER()"].values[0]
-    role = session.sql("SELECT CURRENT_ROLE()").to_pandas()["CURRENT_ROLE()"].values[0]
+    # connector = st.session_state.snow_connector
+    cur = st.session_state.snow_connector.cursor()
+    try:
+        user = cur.execute("SELECT CURRENT_USER()").fetchone()[0]
+        role = cur.execute("SELECT CURRENT_ROLE()").fetchone()[0]
+    except snowflake.connector.errors.ProgrammingError as e:
+    # default error message
+        st.write(e)
+    # customer error message
+        st.write('Error {0} ({1}): {2} ({3})'.format(e.errno, e.sqlstate, e.msg, e.sfqid))
+    finally:
+        cur.close()
     with st.sidebar:
         st.divider()
         st.write("❄️")
@@ -51,7 +60,7 @@ def menu():
     # Determine if a user is logged in or not, then show the correct
     # navigation menu
 
-    if "snowpark_session" not in st.session_state:
+    if "snow_connector" not in st.session_state:
         unauthenticated_menu()
         return
     authenticated_menu()
@@ -60,6 +69,6 @@ def menu():
 def menu_with_redirect():
     # Redirect users to the main page if not logged in, otherwise continue to
     # render the navigation menu
-    if "snowpark_session" not in st.session_state:
+    if "snow_connector" not in st.session_state:
         st.switch_page("home.py")
     menu()

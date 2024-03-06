@@ -1,7 +1,6 @@
 import streamlit as st
 from authlib.integrations.requests_client import OAuth2Session
-from snowflake.snowpark import Session
-
+import snowflake.connector
 
 def validate_config(config):
     required_config_options = [
@@ -89,12 +88,15 @@ class SnowOauth:
                 "account": self.config["account"],
                 "authenticator": "oauth",
                 "token": token["access_token"],
+                "warehouse":self.config["warehouse"]
             }
             try:
-                st.session_state["snowpark_session"] = Session.builder.configs(
-                    snow_configs
-                ).create()
-                st.success("Snowpark session start now !")
+                st.session_state["snow_connector"] = snowflake.connector.connect(**snow_configs)
+
+                # st.session_state["snowpark_session"] = Session.builder.configs(
+                #     snow_configs
+                # ).create()
+                st.success("Connected to snowflake !")
                 st.rerun()
             except Exception as e:
                 st.error(f"Error connecting to Snowflake: \n{str(e)}")

@@ -4,7 +4,7 @@ from menu import menu
 from snow_oauth import SnowOauth
 from select_lang import select_lang
 
-if "snowpark_session" in st.session_state:
+if "snow_connector" in st.session_state:
     sidebar_state = "expanded"
 else:
     sidebar_state = "collapsed"
@@ -48,7 +48,7 @@ st.header(translations["greeting"])
 st.button("refresh")
 
 
-if "snowpark_session" not in st.session_state:
+if "snow_connector" not in st.session_state:
     label = translations["con_snowflake"]
     oauth = SnowOauth(label=label)
     oauth.start_session()
