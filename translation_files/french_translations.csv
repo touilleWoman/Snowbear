@@ -7,5 +7,6 @@ show_user,"Utilisateur : "
 show_role,"Rôle : "
 users,Utilisateurs
 roles,Rôles
+users_list, liste des utilisateurs
 databases, Bases de données
 projects_list, Liste des projets
