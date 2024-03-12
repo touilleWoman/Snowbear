@@ -23,6 +23,8 @@ if "translations" not in st.session_state:
 translations = charge_translations("fr")
 st.session_state.translations = translations
 
+if "selected_lang" not in st.session_state:
+    st.session_state.selected_lang = "fr"
 # selected_lang = st.selectbox("🌐", ["fr", "en"])
 
 

@@ -14,8 +14,10 @@ with col2:
     selected_lang = st.selectbox("🌐", ["fr", "en"])
 
 
-translations = charge_translations(selected_lang)
-st.session_state.translations = translations
+st.session_state.translations = charge_translations(selected_lang)
+if selected_lang != st.session_state.selected_lang:
+    st.session_state.selected_lang = selected_lang
+    st.rerun()
 
 
 
