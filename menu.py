@@ -1,5 +1,6 @@
 import streamlit as st
 import snowflake.connector
+from charge_translations import charge_translations
 
 def logout():
     if "snow_connector" in st.session_state:
@@ -32,6 +33,18 @@ def show_user_and_role():
 
 
 def authenticated_menu():
+    if "selected_lang" not in st.session_state:
+        st.session_state.selected_lang = None
+
+    _col1, col2 = st.columns([8, 1])
+    with col2:
+        # default value will be 'fr' without selection
+        selected_lang = st.selectbox("🌐", ["fr", "en"])
+
+    st.session_state.translations = charge_translations(selected_lang)
+    st.session_state.selected_lang = selected_lang
+        # st.rerun()
+
     # Show a navigation menu for authenticated users
 
     st.sidebar.page_link(
@@ -62,8 +75,8 @@ def menu():
 
     if "snow_connector" not in st.session_state:
         unauthenticated_menu()
-        return
-    authenticated_menu()
+    else:
+        authenticated_menu()
 
 
 def menu_with_redirect():
@@ -72,3 +85,9 @@ def menu_with_redirect():
     if "snow_connector" not in st.session_state:
         st.switch_page("home.py")
     menu()
+
+if __name__ == "__main__":
+    menu()
+
+
+

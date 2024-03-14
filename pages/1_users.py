@@ -1,6 +1,5 @@
 import streamlit as st
 
-from charge_translations import charge_translations
 from menu import menu
 from users_table import UsersTable 
 
@@ -8,16 +7,6 @@ st.set_page_config(page_title="Users", layout="wide", initial_sidebar_state="aut
 
 menu()
 
-_col1, col2 = st.columns([8, 1])
-with col2:
-    # default value will be 'fr' without selection
-    selected_lang = st.selectbox("🌐", ["fr", "en"])
-
-
-st.session_state.translations = charge_translations(selected_lang)
-if selected_lang != st.session_state.selected_lang:
-    st.session_state.selected_lang = selected_lang
-    st.rerun()
 
 
 
@@ -26,25 +15,34 @@ if selected_lang != st.session_state.selected_lang:
 if "snow_connector" not in st.session_state:
     st.warning("Not connected to snowflake")
 else:
-    if "user_action_box" not in st.session_state:
-        st.session_state.user_action_box = False
+    if "one_user_selected" not in st.session_state:
+        st.session_state.one_user_selected = False
+
 
     tab1, tab2 = st.tabs([" 🔎Users List ", "  ➕New User "])
 
     with tab1:
         users_table = UsersTable()
         # st.info('Select ONE user to delete or modify', icon="ℹ️")
-        if st.session_state.user_action_box is True:
-            option = st.selectbox(
-                "Select one user to modify or multipe users to delete",
-                ("Modify", "Delete"),
-                index=None,
-                placeholder="Select your action...",
-            )
-            if option == "Delete":
-                users_table.delete_user()
-            if option == "Modify":
-                users_table.modify_user()                
+        # if st.session_state.one_user_selected is True:
+        if users_table.active_buttons is True:
+            left, right = st.columns([0.3, 0.7])
+            with left:
+                delete_clicked = st.button("Delete", type="primary")
+                if delete_clicked:
+                    users_table.delete_user()
+            with right:
+                st.button("Modify", type="primary")
+            # option = st.selectbox(
+            #     "Select one user to modify or multipe users to delete",
+            #     ("Modify", "Delete"),
+            #     index=None,
+            #     placeholder="Select your action...",
+            # )
+            # if option == "Delete":
+            #     users_table.delete_user()
+            # if option == "Modify":
+            #     users_table.modify_user()                
 
 
     with tab2:
