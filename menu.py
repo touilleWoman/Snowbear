@@ -1,6 +1,7 @@
 import streamlit as st
 import snowflake.connector
 from charge_translations import charge_translations
+from snow_oauth import SnowOauth
 
 def logout():
     if "snow_connector" in st.session_state:
@@ -65,6 +66,14 @@ def authenticated_menu():
 
 
 def unauthenticated_menu():
+    _col1, col2 = st.columns([8, 1])
+    with col2:
+        st.image("./images/Logo_Hardis_Group.png", width=200, caption="Powered by")
+    
+    st.header("❄️ Welcome to your SNOW BEAR ❄️")
+    st.header("❄️ Bienvenue à votre SNOW BEAR ❄️")
+    oauth = SnowOauth(label="Se connecter à Snowflake")
+    oauth.start_session()
     # Show a navigation menu for unauthenticated users
     st.sidebar.page_link("home.py", label="Home")
 

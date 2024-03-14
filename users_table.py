@@ -21,6 +21,7 @@ def load_user_data():
             """
         )
         df = DataFrame(cur.fetchall())
+        breakpoint()
         df[3] = False
 
     except Exception as e:
