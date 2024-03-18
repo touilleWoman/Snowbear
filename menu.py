@@ -44,7 +44,6 @@ def authenticated_menu():
 
     st.session_state.translations = charge_translations(selected_lang)
     st.session_state.selected_lang = selected_lang
-        # st.rerun()
 
     # Show a navigation menu for authenticated users
 
