@@ -2,6 +2,7 @@ import snowflake.connector
 import streamlit as st
 import pandas as pd
 
+
 @st.cache_data
 def load_user_data():
     cur = st.session_state.snow_connector.cursor()
@@ -34,19 +35,33 @@ def filter_df(df, text_search):
     return filtered_df
 
 
-def save_selection_in_buffer():
+def save_selection_in_buffer(df):
     """
-    user clicked one selectbox, 
+    user clicked one selectbox,
     in dataframe: st.session_state.df_buffer
     update the column 'Action' with the new value(True/False)
     """
+    if "df_buffer" not in st.session_state:
+        st.session_state.df_buffer = load_user_data()
+
+    # df = st.session_state.df_view.copy()
+    # modifs = st.session_state.users_modifs["edited_rows"]
+    # for index, value in modifs.items():
+    #     df.iloc[index, -1] = value["Action"]
+    #     name = df.iloc[index]["name"]
+    #     st.session_state.df_buffer.loc[
+    #         st.session_state.df_buffer["name"] == name, "Action"
+    #     ] = value["Action"]
 
     df = st.session_state.df_view.copy()
     modifs = st.session_state.users_modifs["edited_rows"]
     for index, value in modifs.items():
-        changed_selection = value["Action"]
-        name = df.iloc[index]['name']
-        st.session_state.df_buffer.loc[st.session_state.df_buffer['name'] == name,"Action"] = changed_selection
+        df.iloc[index, -1] = value["Action"]
+    if len(st.session_state.df_buffer) == len(df):
+        st.session_state.df_buffer = df
+    else:
+        for index, row in df.iterrows():
+            st.session_state.df_buffer.loc[st.session_state.df_buffer['name'] == row['name'],"Action"] = row["Action"]
 
 
 def show_df():
@@ -54,41 +69,43 @@ def show_df():
     if user search for a user, then show filtered dataframe + selected users
     else show the original dataframe with selected users
     """
-    
-    if "df_view" not in st.session_state: 
-    # To do later : check if user reload when I clear cache 
+
+    if "df_view" not in st.session_state:
+        # To do later : check if user reload when I clear cache
         st.session_state.df_view = load_user_data()
     if "last_search" not in st.session_state:
         st.session_state.last_search = ""
     if "df_buffer" not in st.session_state:
         st.session_state.df_buffer = load_user_data()
-        
+
     text_search = st.text_input("🔍")
 
     # use a filter
     if text_search and text_search != st.session_state.last_search:
         df = st.session_state.df_buffer
         selected_rows = df[df["Action"]]
-        #take off selected rows from the dataframe
+        # take off selected rows from the dataframe
         df = df.drop(selected_rows.index)
-        
+
         df = filter_df(df, text_search)
         # combine selected rows with the filtered dataframe
         df = pd.concat([df, selected_rows])
         st.session_state.df_view = df
-    
+
     # delete the filter
     if not text_search and st.session_state.last_search:
-        st.session_state.df_view = st.session_state.df_buffer       
-        
+        st.session_state.df_view = st.session_state.df_buffer
+
     st.session_state.last_search = text_search
-        
+
     st.data_editor(
         st.session_state.df_view,
         key="users_modifs",
         column_config={"name": "user name"},
         on_change=save_selection_in_buffer,
+        args=[st.session_state.df_view],
     )
+
 
 def user_selected():
     st.session_state.one_user_selected = True
