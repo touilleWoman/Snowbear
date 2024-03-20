@@ -23,9 +23,7 @@ else:
     tab1, tab2 = st.tabs([" 📋Users List ", "  ➕New User "])
 
     with tab1:
-        if "df_users" not in st.session_state: 
-            # To do later : check if user reload when I clear cache 
-            st.session_state.df_users = load_user_data()
+
         show_df()   
         
         
