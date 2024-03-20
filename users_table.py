@@ -37,7 +37,8 @@ def filter_df(df, text_search):
 def update_df_users(df):
     """
     user clicked one selectbox, 
-    update the dataframe column 'Action' with the new value(True/False)
+    in dataframe: st.session_state.df_users_buffer
+    update the column 'Action' with the new value(True/False)
     """
 
     df = df.copy()
@@ -66,11 +67,8 @@ def show_df():
         
     text_search = st.text_input("🔍")
 
-
+    # use a filter
     if text_search and text_search != st.session_state.last_search:
-        st.session_state.df_users = st.session_state.df_users_buffer
-        
-    if text_search :
               
         selected_rows = st.session_state.df_users_buffer[st.session_state.df_users_buffer["Action"]]
         df = load_user_data()
@@ -80,25 +78,21 @@ def show_df():
         df = filter_df(df, text_search)
         # combine selected rows with the filtered dataframe
         df = pd.concat([df, selected_rows])
-            
-        st.data_editor(
-            df,
-            key="users_modifs",
-            column_config={"name": "user name"},
-            on_change=update_df_users,
-            args=[df],
-        )
+        st.session_state.df_users = df
+    
+    # delete the filter
+    if not text_search and st.session_state.last_search:
+        st.session_state.df_users = st.session_state.df_users_buffer       
         
-        st.session_state.last_search = text_search
+    st.session_state.last_search = text_search
         
-    else:
-        st.data_editor(
-            st.session_state.df_users,
-            key="users_modifs",
-            column_config={"name": "user name"},
-            on_change=update_df_users,
-            args=[st.session_state.df_users],
-        )
+    st.data_editor(
+        st.session_state.df_users,
+        key="users_modifs",
+        column_config={"name": "user name"},
+        on_change=update_df_users,
+        args=[st.session_state.df_users],
+    )
 
 def user_selected():
     st.session_state.one_user_selected = True
