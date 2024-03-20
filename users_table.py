@@ -40,14 +40,19 @@ def update_df_users(df):
     update the dataframe column 'Action' with the new value(True/False)
     """
 
+    df = df.copy()
+    
+    if "df_users_buffer" not in st.session_state:
+        st.session_state.df_users_buffer = load_user_data()
+        
     modifs = st.session_state.users_modifs["edited_rows"]
     for index, value in modifs.items():
         df.iloc[index, -1] = value["Action"]
-    if len(st.session_state.df_users) == len(df):
-        st.session_state.df_users = df
+    if len(st.session_state.df_users_buffer) == len(df):
+        st.session_state.df_users_buffer = df
     else:
         for index, row in df.iterrows():
-            st.session_state.df_users.loc[st.session_state.df_users['name'] == row['name'],"Action"] = row["Action"]
+            st.session_state.df_users_buffer.loc[st.session_state.df_users_buffer['name'] == row['name'],"Action"] = row["Action"]
 
 
 def show_df():
@@ -56,27 +61,44 @@ def show_df():
     else show the original dataframe with selected users
     """
 
-    
-    text_search = st.text_input("🔍")
-    df = st.session_state.df_users.copy()
-
-    if text_search:
-        selected_rows = df[df["Action"]]
+    if "last_search" not in st.session_state:
+        st.session_state.last_search = ""
         
+    text_search = st.text_input("🔍")
+
+
+    if text_search and text_search != st.session_state.last_search:
+        st.session_state.df_users = st.session_state.df_users_buffer
+        
+    if text_search :
+              
+        selected_rows = st.session_state.df_users_buffer[st.session_state.df_users_buffer["Action"]]
+        df = load_user_data()
         #take off selected rows from the dataframe
         df = df.drop(selected_rows.index)
         
         df = filter_df(df, text_search)
         # combine selected rows with the filtered dataframe
         df = pd.concat([df, selected_rows])
-
-    st.data_editor(
-        df,
-        key="users_modifs",
-        column_config={"name": "user name"},
-        on_change=update_df_users,
-        args=[df],
-    )
+            
+        st.data_editor(
+            df,
+            key="users_modifs",
+            column_config={"name": "user name"},
+            on_change=update_df_users,
+            args=[df],
+        )
+        
+        st.session_state.last_search = text_search
+        
+    else:
+        st.data_editor(
+            st.session_state.df_users,
+            key="users_modifs",
+            column_config={"name": "user name"},
+            on_change=update_df_users,
+            args=[st.session_state.df_users],
+        )
 
 def user_selected():
     st.session_state.one_user_selected = True
