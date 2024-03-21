@@ -1,6 +1,6 @@
+import pandas as pd
 import snowflake.connector
 import streamlit as st
-import pandas as pd
 
 
 @st.cache_data
@@ -35,33 +35,21 @@ def filter_df(df, text_search):
     return filtered_df
 
 
-def save_selection_in_buffer(df):
+def save_selection_in_buffer():
     """
     user clicked one selectbox,
     in dataframe: st.session_state.df_buffer
     update the column 'Action' with the new value(True/False)
     """
-    if "df_buffer" not in st.session_state:
-        st.session_state.df_buffer = load_user_data()
 
-    # df = st.session_state.df_view.copy()
-    # modifs = st.session_state.users_modifs["edited_rows"]
-    # for index, value in modifs.items():
-    #     df.iloc[index, -1] = value["Action"]
-    #     name = df.iloc[index]["name"]
-    #     st.session_state.df_buffer.loc[
-    #         st.session_state.df_buffer["name"] == name, "Action"
-    #     ] = value["Action"]
-
-    df = st.session_state.df_view.copy()
+    df = st.session_state.df_view.copy(deep=True)
     modifs = st.session_state.users_modifs["edited_rows"]
     for index, value in modifs.items():
         df.iloc[index, -1] = value["Action"]
-    if len(st.session_state.df_buffer) == len(df):
-        st.session_state.df_buffer = df
-    else:
-        for index, row in df.iterrows():
-            st.session_state.df_buffer.loc[st.session_state.df_buffer['name'] == row['name'],"Action"] = row["Action"]
+        name = df.iloc[index]["name"]
+        st.session_state.df_buffer.loc[
+            st.session_state.df_buffer["name"] == name, "Action"
+        ] = value["Action"]
 
 
 def show_df():
@@ -82,7 +70,7 @@ def show_df():
 
     # use a filter
     if text_search and text_search != st.session_state.last_search:
-        df = st.session_state.df_buffer
+        df = st.session_state.df_buffer.copy(deep=True)
         selected_rows = df[df["Action"]]
         # take off selected rows from the dataframe
         df = df.drop(selected_rows.index)
@@ -94,7 +82,7 @@ def show_df():
 
     # delete the filter
     if not text_search and st.session_state.last_search:
-        st.session_state.df_view = st.session_state.df_buffer
+        st.session_state.df_view = st.session_state.df_buffer.copy(deep=True)
 
     st.session_state.last_search = text_search
 
@@ -103,7 +91,6 @@ def show_df():
         key="users_modifs",
         column_config={"name": "user name"},
         on_change=save_selection_in_buffer,
-        args=[st.session_state.df_view],
     )
 
 
