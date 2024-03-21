@@ -56,6 +56,18 @@ def show_df():
     """
     if user search for a user, then show filtered dataframe + selected users
     else show the original dataframe with selected users
+    
+    !!!important information:
+    - df_view is the dataframe that the user see
+    - df_buffer is the dataframe which store the selections
+    why this complexity? because streamlit has a specific way to handle dataframes
+    each time we click on a selectbox, the application rerun from the top, but on the frond end
+    it doesn't always reload the dataframe to avoid flashing effect, 
+    it will reload when the parameters of st.data_editor change.
+    So If we change the value of df_view each time we click, the page will flash each time we click.
+    To avoid this, we use df_buffer to store the selections, 
+    and we update the df_view only when we use the filter or when we take off the filer
+    
     """
 
     if "df_view" not in st.session_state:
@@ -72,15 +84,19 @@ def show_df():
     if text_search and text_search != st.session_state.last_search:
         df = st.session_state.df_buffer.copy(deep=True)
         selected_rows = df[df["Action"]]
-        # take off selected rows from the dataframe
+        
+        # take off selected rows from the dataframe to avoid duplicates
         df = df.drop(selected_rows.index)
 
         df = filter_df(df, text_search)
+        
         # combine selected rows with the filtered dataframe
         df = pd.concat([df, selected_rows])
+        
+        # update the view 
         st.session_state.df_view = df
 
-    # delete the filter
+    # delete the filter, so update the view
     if not text_search and st.session_state.last_search:
         st.session_state.df_view = st.session_state.df_buffer.copy(deep=True)
 
