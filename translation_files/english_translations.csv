@@ -2,8 +2,6 @@ key,en
 greeting,Welcome to your SNOW BEAR
 disconnected,Successfully disconnected
 logout,Log out
-show_user,"User: "
-show_role,"Role: "
 users,Users
 roles,Roles
 users_list, Users list

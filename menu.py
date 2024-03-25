@@ -12,12 +12,11 @@ def logout():
         st.query_params.clear()
 
 
-def show_user_and_role():
+def show_user():
     # connector = st.session_state.snow_connector
     cur = st.session_state.snow_connector.cursor()
     try:
         user = cur.execute("SELECT CURRENT_USER()").fetchone()[0]
-        role = cur.execute("SELECT CURRENT_ROLE()").fetchone()[0]
     except snowflake.connector.errors.ProgrammingError as e:
     # default error message
         st.write(e)
@@ -27,26 +26,25 @@ def show_user_and_role():
         cur.close()
     with st.sidebar:
         st.divider()
-        st.write("❄️")
-        st.write(st.session_state.translations["show_user"] + user)
-        st.write(st.session_state.translations["show_role"] + role)
+        st.write(f"❄️{user}")
         st.button(st.session_state.translations["logout"], on_click=logout)
+        
 
 
 def authenticated_menu():
     if "selected_lang" not in st.session_state:
         st.session_state.selected_lang = None
 
-    _col1, col2 = st.columns([8, 1])
-    with col2:
+    with st.sidebar:
         # default value will be 'fr' without selection
         selected_lang = st.selectbox("🌐", ["fr", "en"])
+        st.divider()
 
     st.session_state.translations = charge_translations(selected_lang)
     st.session_state.selected_lang = selected_lang
 
-    # Show a navigation menu for authenticated users
 
+    # Show a navigation menu for authenticated users
     st.sidebar.page_link(
         "pages/1_users.py", label=st.session_state.translations["users"]
     )
@@ -61,13 +59,16 @@ def authenticated_menu():
         label=st.session_state.translations["projects_list"],
     )
 
-    show_user_and_role()
+    show_user()
+    st.sidebar.divider()
+    st.sidebar.caption("Powered by")
+    st.sidebar.image("./images/Logo_Hardis_Group.png", use_column_width=True)
+    
 
 
 def unauthenticated_menu():
-    _col1, col2 = st.columns([8, 1])
-    with col2:
-        st.image("./images/Logo_Hardis_Group.png", width=200, caption="Powered by")
+    st.text("""❄️     Powered by""")
+    st.image("./images/Logo_Hardis_Group.png", width=200)
     
     st.header("❄️ Welcome to your SNOW BEAR ❄️")
     st.header("❄️ Bienvenue à votre SNOW BEAR ❄️")
