@@ -11,9 +11,8 @@ def logout():
         st.cache_data.clear()
         st.query_params.clear()
 
-
-def show_user():
-    # connector = st.session_state.snow_connector
+@st.cache_data
+def get_user():
     cur = st.session_state.snow_connector.cursor()
     try:
         user = cur.execute("SELECT CURRENT_USER()").fetchone()[0]
@@ -24,6 +23,11 @@ def show_user():
         st.write('Error {0} ({1}): {2} ({3})'.format(e.errno, e.sqlstate, e.msg, e.sfqid))
     finally:
         cur.close()
+    return user
+
+
+def show_user():
+    user = get_user()
     with st.sidebar:
         st.divider()
         st.write(f"❄️{user}")
@@ -67,7 +71,6 @@ def authenticated_menu():
 
 
 def unauthenticated_menu():
-    st.text("""❄️     Powered by""")
     st.image("./images/Logo_Hardis_Group.png", width=200)
     
     st.header("❄️ Welcome to your SNOW BEAR ❄️")

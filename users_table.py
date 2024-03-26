@@ -1,6 +1,5 @@
 import pandas as pd
 import streamlit as st
-import time
 
 
 @st.cache_data
@@ -70,7 +69,7 @@ def show_df():
     - df_view is the dataframe that the user see
     - df_buffer is the dataframe which store the selections
     why this complexity? because streamlit has a specific way to handle dataframes
-    each time we click on a selectbox, the application rerun from the top, but on the frond end
+    each time we click on a selectbox, the application rerun from the top, but on the front end
     it doesn't always reload the dataframe to avoid flashing effect,
     it will reload when the parameters of st.data_editor change.
     So If we change the value of df_view each time we click, the page will flash each time we click.
@@ -118,28 +117,31 @@ def show_df():
     )
 
 
-def new_user(login, first_name, last_name, password):
+def new_user(user_name, first_name, last_name, email, login, password=""):
     cur = st.session_state.snow_connector.cursor()
     try:
-        cur.execute(
-            f"""CREATE USER "{login}" PASSWORD="{password}" FIRST_NAME="{first_name}" LAST_NAME="{last_name}"
+        command = f"""
+            CREATE USER "{user_name}" FIRST_NAME="{first_name}" LAST_NAME="{last_name}" EMAIL="{email}" LOGIN_NAME="{login}"
             """
-        )
+        if password:
+            command += f" PASSWORD='{password}'"
+        cur.execute(command)
     except Exception as e:
         st.warning(e)
     else:
         st.success(cur.fetchone()[0], icon="✅")
         # clear cache to make sure new created user is displayed
-        load_user_data.clear()
-        del st.session_state["df_view"]
+
     finally:
         cur.close()
-        time.sleep(2)
+        load_user_data.clear()
+        del st.session_state["df_view"]
+        del st.session_state["df_buffer"]
         st.rerun()
 
 
 def delete_users(selected_rows):
-    messages = []
+
     try:
         for _index, row in selected_rows.iterrows():
             name = row["name"]
@@ -148,40 +150,60 @@ def delete_users(selected_rows):
                 f"""DROP USER "{name}"
                         """
             )
-            messages.append(cur.fetchone()[0])
+            # succcess messages will be displayed after the rerun
+            st.session_state.message.append(cur.fetchone()[0])
     except Exception as e:
         st.warning(e)
     else:
-        for msg in messages:
-            st.success(msg, icon="✅")
         st.session_state.delete_clicked = False
     finally:
         cur.close()
+        
+        # users deleted, we need to clear the cache then rerun to make sure the deleted users are not displayed
         load_user_data.clear()
         del st.session_state["df_view"]
-        time.sleep(2)
+        del st.session_state["df_buffer"]
         st.rerun()
 
-def modify_user():
-    df = st.session_state.df_buffer
-    selected_rows = df[df.iloc[:, 3]]
-    name, first, last, _ = selected_rows.values[0]
 
+def modify_user(name, modified_fields):
+    try:
+        for label, modif in modified_fields.items():
+            cur = st.session_state.snow_connector.cursor()
+            sql = f"""ALTER USER "{name}" SET {label} = "{modif}"
+                        """
+            cur.execute(sql)
+            st.session_state.message.append(f"{cur.fetchone()[0]} : {sql}")
+    except Exception as e:
+        st.warning(e)
+    finally:
+        cur.close()
+        st.session_state.modify_clicked = False
+        # users modified, we need to clear the cache then rerun to make sure the modified users are displayed
+        load_user_data.clear()
+        del st.session_state["df_view"]
+        del st.session_state["df_buffer"]
+        st.rerun()
+    
+    
+def form_of_modifications(selected_row):
+    name, login, first, last, email, _action = selected_row
     change_password = st.toggle(f"change user {first} {last}'S password")
 
     with st.form("modify_user"):
-        st.text_input("login", value=name, disabled=True)
-        m_first_name = st.text_input("First name", value=first)
-        m_last_name = st.text_input("last name", value=last)
+        st.text_input("user name", value=name, disabled=True)
+        m_login = st.text_input("login name", value=login)
+        m_first = st.text_input("First name", value=first)
+        m_last = st.text_input("last name", value=last)
+        m_email = st.text_input("email", value=email)
         if change_password:
             password1 = st.text_input("new password", type="password")
-            password2 = st.text_input(
-                "confirm password", type="password", disabled=True
-            )
-
-        # password2 = st.text_input("Confirm password", type="password")
-        # if password1 != password2:
-        #     st.error("Passwords do not match. Please try again.")
+            password2 = st.text_input("Confirm password", type="password")
+            if password1 != password2:
+                st.error("Passwords do not match. Please try again.")
         submitted = st.form_submit_button("Submit", type="primary")
-        if submitted:
-            pass
+        if submitted and (not change_password or password1 == password2):
+            pairs = [(login, m_login, "LOGIN_NAME"),(first, m_first, "FIRST_NAME"), (last, m_last, "LAST_NAME"), (email, m_email, "EMAIL")]
+            modified_fields = {label: m_x for x, m_x, label in pairs if m_x != x}
+            modify_user(name, modified_fields)            
+
