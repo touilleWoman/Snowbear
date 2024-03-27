@@ -148,6 +148,42 @@ def new_user(user_name, first_name, last_name, email, login, password=""):
         cur.close()
         clear_cache_then_rerun()
 
+def disable_users(selected_rows):
+    try:
+        for _index, row in selected_rows.iterrows():
+            name = row["name"]
+            cur = st.session_state.snow_connector.cursor()
+            sql = f"""ALTER USER "{name}" SET DISABLED = TRUE;
+                        """
+            cur.execute(sql)
+            # succcess messages will be displayed after the rerun
+            st.session_state.message.append(f"{cur.fetchone()[0]} {sql}")
+    except Exception as e:
+        st.session_state.message.append(f"Error: {e}")
+    else:
+        st.session_state.diable_clicked = False
+    finally:
+        cur.close()
+        clear_cache_then_rerun()
+
+
+def enable_users(selected_rows):
+    try:
+        for _index, row in selected_rows.iterrows():
+            name = row["name"]
+            cur = st.session_state.snow_connector.cursor()
+            sql =f"""ALTER USER "{name}" SET DISABLED = FALSE;
+                        """
+            cur.execute(sql)
+            # succcess messages will be displayed after the rerun
+            st.session_state.message.append(f"{cur.fetchone()[0]} {sql}")
+    except Exception as e:
+        st.session_state.message.append(f"Error: {e}")
+    else:
+        st.session_state.enable_clicked = False
+    finally:
+        cur.close()
+        clear_cache_then_rerun()
 
 def delete_users(selected_rows):
     try:
@@ -161,13 +197,11 @@ def delete_users(selected_rows):
             # succcess messages will be displayed after the rerun
             st.session_state.message.append(cur.fetchone()[0])
     except Exception as e:
-        st.warning(e)
+        st.session_state.message.append(f"Error: {e}")
     else:
         st.session_state.delete_clicked = False
     finally:
         cur.close()
-
-        # users deleted, we need to clear the cache then rerun to make sure the deleted users are not displayed
         clear_cache_then_rerun()
 
 
@@ -180,13 +214,11 @@ def modify_user(name, modified_fields):
             cur.execute(sql)
             st.session_state.message.append(f"{cur.fetchone()[0]} {sql}")
     except Exception as e:
-        st.warning(e)
         st.session_state.message.append(f"Error: {e}")
     else:
         st.session_state.modify_clicked = False
     finally:
         cur.close()
-        # users modified, we need to clear the cache then rerun to make sure the modified users are displayed
         clear_cache_then_rerun()
 
 
