@@ -9,9 +9,13 @@ menu()
 
 def switch_delete_button():
     st.session_state.delete_clicked = not st.session_state.delete_clicked
+    # make sure the delete section and modify section are not both open
+    st.session_state.modify_clicked = False
     
 def switch_modify_button():
     st.session_state.modify_clicked = not st.session_state.modify_clicked
+    # make sure the delete section and modify section are not both open
+    st.session_state.delete_clicked = False
     
 def clear_form():
     st.session_state.form_id +="1"
@@ -30,13 +34,14 @@ else:
             st.session_state.modify_clicked = False
           
         show_df()
+        if "message" not in st.session_state:
+            st.session_state.message = []
 
         # nb_selected is updated in the show_df function
         if st.session_state.nb_selected > 0:
-            if "message" not in st.session_state:
-                st.session_state.message = []
+
                 
-            col_modif, col_delete = st.columns([0.3, 0.7])
+            col_modif, col_enable, col_disable, col_delete = st.columns([1, 1, 1, 8])
             
             # modify one user
             with col_modif:
@@ -47,15 +52,27 @@ else:
                     disabled=(st.session_state.nb_selected != 1),
                     on_click=switch_modify_button,
                 )
-            if st.session_state.modify_clicked:
-                selected_row = st.session_state.df_buffer[st.session_state.df_buffer["Action"]]
-                form_of_modifications(selected_row.iloc[0])
-                
-            # delete users    
+            with col_enable:
+                st.button("Enable", type="primary")
+            with col_disable:
+                st.button("Disable", type="primary")
             with col_delete:
                 st.button("Delete", key="delete", type="primary", on_click=switch_delete_button)
+                
+            if st.session_state.modify_clicked:
+                st.session_state.df_view = st.session_state.df_buffer.copy(deep=True)
+                selected_row = st.session_state.df_view[st.session_state.df_view["Action"]]
+                try:
+                    form_of_modifications(selected_row.iloc[0])
+                except Exception as e:
+                    st.write(f"selected_row: {selected_row}")
+                    st.write(e)
+                
+            # delete users    
+
             if st.session_state.delete_clicked:
-                selected_rows = st.session_state.df_buffer[st.session_state.df_buffer["Action"]]
+                st.session_state.df_view = st.session_state.df_buffer.copy(deep=True)
+                selected_rows = st.session_state.df_view[st.session_state.df_view["Action"]]
                 st.warning("Do you confirm the deletion of the following users?")
                 st.write(selected_rows)
                 col_confirm, col_cancel = st.columns([0.1, 0.5])
@@ -65,11 +82,14 @@ else:
                 with col_cancel:
                     st.button("Cancel", key="cancel", type="secondary", on_click=switch_delete_button)
                     
-            # message created in delete_users() 
-            if st.session_state.message:
-                for msg in st.session_state.message:
+        # message created in delete_users() 
+        if st.session_state.message:
+            for msg in st.session_state.message:
+                if "Error" in msg:
+                    st.error(msg, icon="❌")
+                else:
                     st.success(msg, icon="✅")
-                del st.session_state["message"]
+            del st.session_state["message"]
 
     with tab2:
         if "form_id" not in st.session_state:
@@ -88,7 +108,7 @@ else:
                 password1 = st.text_input("Enter password", type="password", help="optinal")
                 password2 = st.text_input("Confirm password", type="password", help="optinal")
                 if password1 != password2:
-                    st.error("Passwords do not match. Please try again.")            
+                    st.error("Passwords do not match. Please try again.")  
             
                 all_filled = all ([user_name, first_name, last_name, email, login])
                 submitted = st.form_submit_button("Submit", type="primary")
