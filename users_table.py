@@ -7,13 +7,10 @@ def load_user_data():
     cur = st.session_state.snow_connector.cursor()
     try:
         cur.execute("SHOW USERS")
-        cur.execute(
-            """
-            select "name", "login_name", "first_name", "last_name", "email"
-            from table(result_scan(last_query_id())) order by "name"
-            """
-        )
-        df = cur.fetch_pandas_all()
+        rows = cur.fetchall()
+        df = pd.DataFrame(rows, columns=[desc[0] for desc in cur.description])
+        selected_columns = ["name", "login_name", "first_name", "last_name", "email", "disabled"]
+        df = df[selected_columns]
         df["Action"] = False
 
     except Exception as e:
@@ -187,7 +184,7 @@ def modify_user(name, modified_fields):
     
     
 def form_of_modifications(selected_row):
-    name, login, first, last, email, _action = selected_row
+    name, login, first, last, email, _disabled, _action = selected_row
     change_password = st.toggle(f"change user {first} {last}'S password")
 
     with st.form("modify_user"):
