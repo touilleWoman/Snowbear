@@ -4,6 +4,11 @@ from .users_table import load_user_data
 
 
 def switch_button(label):
+    """	
+    switch the button to the opposite state
+    When one button is clicked, all the others are set to False
+    with type "secondary"
+    """
     clicks = st.session_state.clicks
     types = st.session_state.types
     clicks[label] = not clicks[label]

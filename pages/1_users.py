@@ -17,6 +17,7 @@ def clear_form():
 def update_and_show_selected(action_label):
     st.session_state.df_view = st.session_state.df_buffer.copy(deep=True)
     selected_rows = st.session_state.df_view[st.session_state.df_view["Action"]]
+    selected_rows.drop(columns=["Action"], inplace=True)
     st.warning(f"Do you confirm the {action_label} of the following users?")
     st.write(selected_rows)
     return selected_rows
