@@ -1,13 +1,8 @@
 import streamlit as st
 
 from menu import menu
-from utils.buttons import (
-    switch_delete_button,
-    switch_disable_button,
-    switch_enable_button,
-    switch_modify_button,
-)
-from utils.users_management import delete_users, disable_users, enable_users, new_user, form_of_modifications
+
+from utils.users_management import delete_users, disable_users, enable_users, new_user, form_of_modifications, switch_button
 from utils.users_table import show_df
 
 st.set_page_config(page_title="Users", layout="wide", initial_sidebar_state="auto")
@@ -34,29 +29,16 @@ else:
 
         
     with tab1:
+        if "clicks" not in st.session_state:
+            labels = ["delete", "modify", "disable", "enable"]
+            st.session_state.clicks = {label: False for label in labels}
+            st.session_state.types = {label: "primary" for label in labels}
         if "message" not in st.session_state:
             st.session_state.message = []
         if "nb_selected" not in st.session_state:
             st.session_state.nb_selected = 0
-        if "delete_clicked" not in st.session_state:
-            st.session_state.delete_clicked = False
-        if "modify_clicked" not in st.session_state:
-            st.session_state.modify_clicked = False
-        if "disable_clicked" not in st.session_state:
-            st.session_state.disable_clicked = False
-        if "enable_clicked" not in st.session_state:
-            st.session_state.enable_clicked = False
-        if "enable_type" not in st.session_state:
-            st.session_state.enable_type = "primary"
-        if "disable_type" not in st.session_state:
-            st.session_state.disable_type = "primary"
-        if "delete_type" not in st.session_state:
-            st.session_state.delete_type = "primary"
-        if "modify_type" not in st.session_state:
-            st.session_state.modify_type = "primary"
 
         show_df()
-
 
         # nb_selected is updated in the show_df function
         if st.session_state.nb_selected > 0:
@@ -67,31 +49,33 @@ else:
                 st.button(
                     "Modify",
                     help="select one user to modify",
-                    type=st.session_state.modify_type,
+                    type=st.session_state.types["modify"],
                     disabled=(st.session_state.nb_selected != 1),
-                    on_click=switch_modify_button,
+                    on_click=switch_button,
+                    args=["modify"],
                 )
             with col_enable:
                 st.button(
                     "Enable",
-                    type=st.session_state.enable_type,
-                    on_click=switch_enable_button,
+                    type=st.session_state.types["enable"],
+                    on_click=switch_button,
+                    args=["enable"],
                 )
             with col_disable:
                 st.button(
                     "Disable",
-                    type=st.session_state.disable_type,
-                    on_click=switch_disable_button,
+                    type=st.session_state.types["disable"],
+                    on_click=switch_button, args=["disable"],
                 )
             with col_delete:
                 st.button(
                     "Delete",
                     key="delete",
-                    type=st.session_state.delete_type,
-                    on_click=switch_delete_button,
+                    type=st.session_state.types["delete"],
+                    on_click=switch_button, args=["delete"],
                 )
 
-            if st.session_state.modify_clicked:
+            if st.session_state.clicks["modify"]:
                 st.session_state.df_view = st.session_state.df_buffer.copy(deep=True)
                 selected_row = st.session_state.df_view[
                     st.session_state.df_view["Action"]
@@ -103,7 +87,7 @@ else:
                     st.write(e)
 
             # enable users
-            if st.session_state.enable_clicked:
+            if st.session_state.clicks["enable"]:
                 selected_rows = update_and_show_selected("enabling")
                 col_confirm, col_cancel = st.columns([0.1, 0.5])
                 with col_confirm:
@@ -114,12 +98,14 @@ else:
                         "Cancel",
                         key="cancel",
                         type="secondary",
-                        on_click=switch_enable_button,
+                        # on_click=switch_enable_button,
+                        on_click=switch_button,
+                        args=["enable"],
                     )
 
             # disable users
 
-            if st.session_state.disable_clicked:
+            if st.session_state.clicks["disable"]:
                 selected_rows = update_and_show_selected("disabling")
                 col_confirm, col_cancel = st.columns([0.1, 0.5])
                 with col_confirm:
@@ -130,12 +116,14 @@ else:
                         "Cancel",
                         key="cancel",
                         type="secondary",
-                        on_click=switch_disable_button,
+                        # on_click=switch_disable_button,
+                        on_click=switch_button,
+                        args=["disable"],
                     )
 
             # delete users
 
-            if st.session_state.delete_clicked:
+            if st.session_state.clicks["delete"]:
                 selected_rows = update_and_show_selected("deletion")
                 col_confirm, col_cancel = st.columns([0.1, 0.5])
                 with col_confirm:
@@ -146,7 +134,9 @@ else:
                         "Cancel",
                         key="cancel",
                         type="secondary",
-                        on_click=switch_delete_button,
+                        # on_click=switch_delete_button,
+                        on_click=switch_button,
+                        args=["delete"],
                     )
 
         if st.session_state.message:

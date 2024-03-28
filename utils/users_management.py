@@ -1,6 +1,24 @@
 import streamlit as st
+
 from .users_table import load_user_data
-from .buttons import switch_delete_button, switch_disable_button, switch_enable_button, switch_modify_button
+
+
+def switch_button(label):
+    clicks = st.session_state.clicks
+    types = st.session_state.types
+    clicks[label] = not clicks[label]
+    for key in clicks.keys():
+        if key != label:
+            clicks[key] = False
+    if clicks[label]:
+        for key in types.keys():
+            if key != label:
+                types[key] = "secondary"
+    else:
+        for key in types.keys():
+            types[key] = "primary"
+
+
 
 def clear_cache_then_rerun():
     load_user_data.clear()
@@ -22,8 +40,6 @@ def new_user(user_name, first_name, last_name, email, login, password=""):
     except Exception as e:
         st.session_state.message_tab2 =f"Error: {e}"
     else:
-        # st.success(cur.fetchone()[0], icon="✅")
-        # clear cache to make sure new created user is displayed
         st.session_state.message_tab2 = cur.fetchone()[0]
     finally:
         cur.close()
@@ -43,7 +59,7 @@ def disable_users(selected_rows):
     except Exception as e:
         st.session_state.message.append(f"Error: {e}")
     else:
-        switch_disable_button()
+        switch_button("disable")
     finally:
         cur.close()
         clear_cache_then_rerun()
@@ -62,7 +78,7 @@ def enable_users(selected_rows):
     except Exception as e:
         st.session_state.message.append(f"Error: {e}")
     else:
-        switch_enable_button()
+        switch_button("enable")
     finally:
         cur.close()
         clear_cache_then_rerun()
@@ -82,7 +98,7 @@ def delete_users(selected_rows):
     except Exception as e:
         st.session_state.message.append(f"Error: {e}")
     else:
-        switch_delete_button()
+        switch_button("delete")
     finally:
         cur.close()
         clear_cache_then_rerun()
@@ -99,7 +115,7 @@ def modify_user(name, modified_fields):
     except Exception as e:
         st.session_state.message.append(f"Error: {e}")
     else:
-        switch_modify_button()
+        switch_button("modify")
     finally:
         cur.close()
         clear_cache_then_rerun()
