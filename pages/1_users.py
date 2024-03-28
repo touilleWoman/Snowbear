@@ -1,24 +1,18 @@
 import streamlit as st
 
 from menu import menu
-from users_table import (
-    delete_users,
-    disable_users,
-    enable_users,
-    form_of_modifications,
-    new_user,
-    show_df,
+from utils.buttons import (
+    switch_delete_button,
     switch_disable_button,
     switch_enable_button,
-    switch_delete_button,
     switch_modify_button,
 )
+from utils.users_management import delete_users, disable_users, enable_users, new_user, form_of_modifications
+from utils.users_table import show_df
 
 st.set_page_config(page_title="Users", layout="wide", initial_sidebar_state="auto")
 
 menu()
-
-
 
 
 def clear_form():
@@ -38,7 +32,10 @@ if "snow_connector" not in st.session_state:
 else:
     tab1, tab2 = st.tabs([" 📋Users List ", "  ➕New User "])
 
+        
     with tab1:
+        if "message" not in st.session_state:
+            st.session_state.message = []
         if "nb_selected" not in st.session_state:
             st.session_state.nb_selected = 0
         if "delete_clicked" not in st.session_state:
@@ -57,10 +54,9 @@ else:
             st.session_state.delete_type = "primary"
         if "modify_type" not in st.session_state:
             st.session_state.modify_type = "primary"
-            
+
         show_df()
-        if "message" not in st.session_state:
-            st.session_state.message = []
+
 
         # nb_selected is updated in the show_df function
         if st.session_state.nb_selected > 0:
@@ -76,9 +72,17 @@ else:
                     on_click=switch_modify_button,
                 )
             with col_enable:
-                st.button("Enable", type=st.session_state.enable_type, on_click=switch_enable_button)
+                st.button(
+                    "Enable",
+                    type=st.session_state.enable_type,
+                    on_click=switch_enable_button,
+                )
             with col_disable:
-                st.button("Disable", type=st.session_state.disable_type, on_click=switch_disable_button)
+                st.button(
+                    "Disable",
+                    type=st.session_state.disable_type,
+                    on_click=switch_disable_button,
+                )
             with col_delete:
                 st.button(
                     "Delete",
@@ -145,24 +149,24 @@ else:
                         on_click=switch_delete_button,
                     )
 
-        # message created in delete_users()
         if st.session_state.message:
             for msg in st.session_state.message:
                 if "Error" in msg:
                     st.error(msg, icon="❌")
                 else:
                     st.success(msg, icon="✅")
-            del st.session_state["message"]
+            st.session_state.message = []
 
     with tab2:
+        if "message_tab2" not in st.session_state:
+            st.session_state.message_tab2 = ""
         if "form_id" not in st.session_state:
             st.session_state.form_id = "new_user"
         st.header("Create a new user")
         container = st.container(border=True)
         with container:
             with st.form(
-                key=st.session_state.form_id, border=False, clear_on_submit=True
-            ):
+                key=st.session_state.form_id, border=False):
                 # mandatary fields
                 user_name = st.text_input("User name*")
                 first_name = st.text_input("First name*")
@@ -190,3 +194,11 @@ else:
                     else:
                         st.error("Fields marked with * are mandatory.")
             st.button("Cancel", type="secondary", on_click=clear_form)
+            
+        if st.session_state.message_tab2:
+            msg = st.session_state.message_tab2
+            if "Error" in msg:
+                st.error(msg, icon="❌")
+            else:
+                st.success(msg, icon="✅")
+            st.session_state.message_tab2 = ""          
