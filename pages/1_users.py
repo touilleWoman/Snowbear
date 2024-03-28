@@ -8,6 +8,10 @@ from users_table import (
     form_of_modifications,
     new_user,
     show_df,
+    switch_disable_button,
+    switch_enable_button,
+    switch_delete_button,
+    switch_modify_button,
 )
 
 st.set_page_config(page_title="Users", layout="wide", initial_sidebar_state="auto")
@@ -15,33 +19,6 @@ st.set_page_config(page_title="Users", layout="wide", initial_sidebar_state="aut
 menu()
 
 
-def switch_disable_button():
-    st.session_state.disable_clicked = not st.session_state.disable_clicked
-    # make sure other button sections are not open at the same time
-    st.session_state.modify_clicked = False
-    st.session_state.delete_clicked = False
-    st.session_state.enable_clicked = False
-
-
-def switch_enable_button():
-    st.session_state.enable_clicked = not st.session_state.enable_clicked
-    st.session_state.modify_clicked = False
-    st.session_state.delete_clicked = False
-    st.session_state.disable_clicked = False
-
-
-def switch_delete_button():
-    st.session_state.delete_clicked = not st.session_state.delete_clicked
-    st.session_state.modify_clicked = False
-    st.session_state.disable_clicked = False
-    st.session_state.enable_clicked = False
-
-
-def switch_modify_button():
-    st.session_state.modify_clicked = not st.session_state.modify_clicked
-    st.session_state.disable_clicked = False
-    st.session_state.delete_clicked = False
-    st.session_state.enable_clicked = False
 
 
 def clear_form():
@@ -72,7 +49,15 @@ else:
             st.session_state.disable_clicked = False
         if "enable_clicked" not in st.session_state:
             st.session_state.enable_clicked = False
-
+        if "enable_type" not in st.session_state:
+            st.session_state.enable_type = "primary"
+        if "disable_type" not in st.session_state:
+            st.session_state.disable_type = "primary"
+        if "delete_type" not in st.session_state:
+            st.session_state.delete_type = "primary"
+        if "modify_type" not in st.session_state:
+            st.session_state.modify_type = "primary"
+            
         show_df()
         if "message" not in st.session_state:
             st.session_state.message = []
@@ -86,19 +71,19 @@ else:
                 st.button(
                     "Modify",
                     help="select one user to modify",
-                    type="primary",
+                    type=st.session_state.modify_type,
                     disabled=(st.session_state.nb_selected != 1),
                     on_click=switch_modify_button,
                 )
             with col_enable:
-                st.button("Enable", type="primary", on_click=switch_enable_button)
+                st.button("Enable", type=st.session_state.enable_type, on_click=switch_enable_button)
             with col_disable:
-                st.button("Disable", type="primary", on_click=switch_disable_button)
+                st.button("Disable", type=st.session_state.disable_type, on_click=switch_disable_button)
             with col_delete:
                 st.button(
                     "Delete",
                     key="delete",
-                    type="primary",
+                    type=st.session_state.delete_type,
                     on_click=switch_delete_button,
                 )
 
