@@ -2,6 +2,7 @@ import streamlit as st
 import snowflake.connector
 from charge_translations import charge_translations
 from snow_oauth import SnowOauth
+from footer import footer
 
 def logout():
     if "snow_connector" in st.session_state:
@@ -66,12 +67,16 @@ def authenticated_menu():
     show_user()
     st.sidebar.divider()
     st.sidebar.caption("Powered by")
-    st.sidebar.image("./images/Logo_Hardis_Group.png", use_column_width=True)
+    st.sidebar.image("./images/logo_hardis.png", use_column_width=True)
     
 
 
 def unauthenticated_menu():
-    st.image("./images/Logo_Hardis_Group.png", width=200)
+    col_hardis, col_partner = st.columns([1, 6])
+    with col_hardis:
+        st.image("./images/logo_hardis.png", width=200)
+    with col_partner:
+        st.image("./images/place_holder.jpg", width=200)
     
     st.header("❄️ Welcome to your SNOW BEAR ❄️")
     st.header("❄️ Bienvenue à votre SNOW BEAR ❄️")
@@ -89,6 +94,7 @@ def menu():
         unauthenticated_menu()
     else:
         authenticated_menu()
+    footer()
 
 
 def menu_with_redirect():
