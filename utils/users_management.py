@@ -1,5 +1,5 @@
 import streamlit as st
-
+import html
 from .users_table import load_user_data
 
 
@@ -36,12 +36,14 @@ def clear_cache_then_rerun():
 def new_user(user_name, first_name, last_name, email, login, password=""):
     cur = st.session_state.snow_connector.cursor()
     try:
-        command = f"""
+        query = f"""
             CREATE USER "{user_name}" FIRST_NAME="{first_name}" LAST_NAME="{last_name}" EMAIL="{email}" LOGIN_NAME="{login}"
             """
         if password:
-            command += f" PASSWORD='{password}'"
-        cur.execute(command)
+            query += f" PASSWORD='{password}'"
+        query = html.escape(query)
+        cur.execute(query)
+        
     except Exception as e:
         st.session_state.message_tab2 =f"Error: {e}"
     else:
@@ -113,10 +115,11 @@ def modify_user(name, modified_fields):
     try:
         for label, modif in modified_fields.items():
             cur = st.session_state.snow_connector.cursor()
-            sql = f"""ALTER USER "{name}" SET {label} = "{modif}"
+            query = f"""ALTER USER "{name}" SET {label} = "{modif}"
                         """
-            cur.execute(sql)
-            st.session_state.message.append(f"{cur.fetchone()[0]} {sql}")
+            query = html.escape(query)
+            cur.execute(query)
+            st.session_state.message.append(f"{cur.fetchone()[0]} {query}")
     except Exception as e:
         st.session_state.message.append(f"Error: {e}")
     else:
