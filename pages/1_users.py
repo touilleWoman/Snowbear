@@ -2,7 +2,14 @@ import streamlit as st
 
 from menu import menu
 
-from utils.users_management import delete_users, disable_users, enable_users, new_user, form_of_modifications, switch_button
+from utils.users_management import (
+    delete_users,
+    disable_users,
+    enable_users,
+    new_user,
+    form_of_modifications,
+    switch_button,
+)
 from utils.users_table import show_df
 
 st.set_page_config(page_title="Users", layout="wide", initial_sidebar_state="auto")
@@ -28,7 +35,6 @@ if "snow_connector" not in st.session_state:
 else:
     tab1, tab2 = st.tabs([" 📋Users List ", "  ➕New User "])
 
-        
     with tab1:
         if "clicks" not in st.session_state:
             labels = ["delete", "modify", "disable", "enable"]
@@ -66,14 +72,16 @@ else:
                 st.button(
                     "Disable",
                     type=st.session_state.types["disable"],
-                    on_click=switch_button, args=["disable"],
+                    on_click=switch_button,
+                    args=["disable"],
                 )
             with col_delete:
                 st.button(
                     "Delete",
                     key="delete",
                     type=st.session_state.types["delete"],
-                    on_click=switch_button, args=["delete"],
+                    on_click=switch_button,
+                    args=["delete"],
                 )
 
             if st.session_state.clicks["modify"]:
@@ -157,7 +165,8 @@ else:
         container = st.container(border=True)
         with container:
             with st.form(
-                key=st.session_state.form_id, border=False):
+                key=st.session_state.form_id, border=False, clear_on_submit=True
+            ):
                 # mandatary fields
                 user_name = st.text_input("User name*")
                 first_name = st.text_input("First name*")
@@ -184,12 +193,12 @@ else:
                         )
                     else:
                         st.error("Fields marked with * are mandatory.")
-            st.button("Cancel", type="secondary", on_click=clear_form)
-            
+            st.button("Reset", type="secondary", on_click=clear_form)
+
         if st.session_state.message_tab2:
             msg = st.session_state.message_tab2
             if "Error" in msg:
                 st.error(msg, icon="❌")
             else:
                 st.success(msg, icon="✅")
-            st.session_state.message_tab2 = ""          
+            st.session_state.message_tab2 = ""

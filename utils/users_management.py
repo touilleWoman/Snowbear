@@ -34,6 +34,14 @@ def clear_cache_then_rerun():
 
 
 def new_user(user_name, first_name, last_name, email, login, password=""):
+    user_name = html.escape(user_name)
+    first_name = html.escape(first_name)
+    last_name = html.escape(last_name)
+    email = html.escape(email)
+    login = html.escape(login)
+    if password:
+        password = html.escape(password)
+    
     cur = st.session_state.snow_connector.cursor()
     try:
         query = f"""
@@ -41,7 +49,6 @@ def new_user(user_name, first_name, last_name, email, login, password=""):
             """
         if password:
             query += f" PASSWORD='{password}'"
-        query = html.escape(query)
         cur.execute(query)
         
     except Exception as e:
@@ -58,11 +65,11 @@ def disable_users(selected_rows):
         for _index, row in selected_rows.iterrows():
             name = row["name"]
             cur = st.session_state.snow_connector.cursor()
-            sql = f"""ALTER USER "{name}" SET DISABLED = TRUE;
+            query = f"""ALTER USER "{name}" SET DISABLED = TRUE;
                         """
-            cur.execute(sql)
+            cur.execute(query)
             # succcess messages will be displayed after the rerun
-            st.session_state.message.append(f"{cur.fetchone()[0]} {sql}")
+            st.session_state.message.append(f"{cur.fetchone()[0]} {query}")
     except Exception as e:
         st.session_state.message.append(f"Error: {e}")
     else:
@@ -114,10 +121,10 @@ def delete_users(selected_rows):
 def modify_user(name, modified_fields):
     try:
         for label, modif in modified_fields.items():
+            modif = html.escape(modif)
             cur = st.session_state.snow_connector.cursor()
             query = f"""ALTER USER "{name}" SET {label} = "{modif}"
                         """
-            query = html.escape(query)
             cur.execute(query)
             st.session_state.message.append(f"{cur.fetchone()[0]} {query}")
     except Exception as e:
