@@ -6,8 +6,7 @@ def load_user_data():
     cur = st.session_state.snow_connector.cursor()
     try:
         cur.execute("SHOW USERS")
-        rows = cur.fetchall()
-        df = pd.DataFrame(rows, columns=[desc[0] for desc in cur.description])
+        df = pd.DataFrame(cur.fetchall(), columns=[desc[0] for desc in cur.description])
         selected_columns = [
             "name",
             "login_name",

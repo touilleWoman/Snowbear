@@ -3,6 +3,7 @@ import snowflake.connector
 from charge_translations import charge_translations
 from snow_oauth import SnowOauth
 from footer import footer
+from utils.admin_table import get_types
 
 def logout():
     if "snow_connector" in st.session_state:
@@ -63,7 +64,13 @@ def authenticated_menu():
         "pages/4_list_of_projects.py",
         label=st.session_state.translations["projects_list"],
     )
-
+    
+    st.sidebar.divider()
+    st.sidebar.page_link(
+        "pages/5_admin.py", label = "Admin"
+    )
+    st.session_state.type = st.sidebar.radio("types", get_types(), label_visibility="hidden")
+    st.write(st.session_state.type)
     show_user()
     st.sidebar.divider()
     st.sidebar.caption("Powered by")

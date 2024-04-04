@@ -31,7 +31,7 @@ def update_and_show_selected(action_label):
 
 
 if "snow_connector" not in st.session_state:
-    st.warning("Not connected to snowflake")
+    st.warning("Non connecté à Snowflake")
 else:
     tab1, tab2 = st.tabs([" 📋Users List ", "  ➕New User "])
 
