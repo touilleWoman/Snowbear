@@ -19,3 +19,11 @@ def get_types():
     df = load_params_data()
     types = df.TYPE.unique()
     return types
+
+def show_selected_params(type):
+    df = load_params_data()
+    filtered_df = df[df["TYPE"] == type]
+    st.data_editor(
+        filtered_df,
+        hide_index=True,
+    )

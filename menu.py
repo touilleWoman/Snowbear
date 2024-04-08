@@ -5,6 +5,7 @@ from snow_oauth import SnowOauth
 from footer import footer
 from utils.admin_table import get_types
 
+
 def logout():
     if "snow_connector" in st.session_state:
         st.session_state["snow_connector"].close()
@@ -13,16 +14,19 @@ def logout():
         st.cache_data.clear()
         st.query_params.clear()
 
+
 @st.cache_data
 def get_user():
     cur = st.session_state.snow_connector.cursor()
     try:
         user = cur.execute("SELECT CURRENT_USER()").fetchone()[0]
     except snowflake.connector.errors.ProgrammingError as e:
-    # default error message
+        # default error message
         st.write(e)
-    # customer error message
-        st.write('Error {0} ({1}): {2} ({3})'.format(e.errno, e.sqlstate, e.msg, e.sfqid))
+        # customer error message
+        st.write(
+            "Error {0} ({1}): {2} ({3})".format(e.errno, e.sqlstate, e.msg, e.sfqid)
+        )
     finally:
         cur.close()
     return user
@@ -34,10 +38,9 @@ def show_user():
         st.divider()
         st.write(f"❄️{user}")
         st.button(st.session_state.translations["logout"], on_click=logout)
-        
 
 
-def authenticated_menu():
+def authenticated_menu(show_admin_radio):
     if "selected_lang" not in st.session_state:
         st.session_state.selected_lang = None
 
@@ -48,7 +51,6 @@ def authenticated_menu():
 
     st.session_state.translations = charge_translations(selected_lang)
     st.session_state.selected_lang = selected_lang
-
 
     # Show a navigation menu for authenticated users
     st.sidebar.page_link(
@@ -64,18 +66,20 @@ def authenticated_menu():
         "pages/4_list_of_projects.py",
         label=st.session_state.translations["projects_list"],
     )
-    
+
     st.sidebar.divider()
-    st.sidebar.page_link(
-        "pages/5_admin.py", label = "Admin"
-    )
-    st.session_state.type = st.sidebar.radio("types", get_types(), label_visibility="hidden")
-    st.write(st.session_state.type)
+    st.sidebar.page_link("pages/5_admin.py", label="Admin")
+    if show_admin_radio:
+        # Initialize st.session_state.type
+        st.session_state.type = st.sidebar.radio(
+            "types",
+            get_types(),
+            label_visibility="hidden",
+        )
     show_user()
     st.sidebar.divider()
     st.sidebar.caption("Powered by")
     st.sidebar.image("./images/logo_hardis.png", use_column_width=True)
-    
 
 
 def unauthenticated_menu():
@@ -84,7 +88,7 @@ def unauthenticated_menu():
         st.image("./images/logo_hardis.png", width=200)
     with col_partner:
         st.image("./images/place_holder.jpg", width=200)
-    
+
     st.header("❄️ Welcome to your SNOW BEAR ❄️")
     st.header("❄️ Bienvenue à votre SNOW BEAR ❄️")
     oauth = SnowOauth(label="Se connecter à Snowflake")
@@ -93,14 +97,14 @@ def unauthenticated_menu():
     st.sidebar.page_link("home.py", label="Home")
 
 
-def menu():
+def menu(show_admin_radio=False):
     # Determine if a user is logged in or not, then show the correct
     # navigation menu
 
     if "snow_connector" not in st.session_state:
         unauthenticated_menu()
     else:
-        authenticated_menu()
+        authenticated_menu(show_admin_radio)
     footer()
 
 
@@ -111,8 +115,6 @@ def menu_with_redirect():
         st.switch_page("home.py")
     menu()
 
+
 if __name__ == "__main__":
     menu()
-
-
-
