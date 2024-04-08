@@ -39,7 +39,8 @@ else:
         if "clicks" not in st.session_state:
             labels = ["delete", "modify", "disable", "enable"]
             st.session_state.clicks = {label: False for label in labels}
-            st.session_state.types = {label: "primary" for label in labels}
+            st.session_state.disabled = {label: False for label in labels}
+            # st.session_state.types = {label: "primary" for label in labels}
         if "message" not in st.session_state:
             st.session_state.message = []
         if "nb_selected" not in st.session_state:
@@ -58,22 +59,24 @@ else:
                     st.button(
                         "Modify",
                         help="select one user to modify",
-                        type=st.session_state.types["modify"],
-                        disabled=(st.session_state.nb_selected != 1),
+                        type="primary",
+                        disabled=(st.session_state.nb_selected != 1) or st.session_state.disabled["modify"],
                         on_click=switch_button,
                         args=["modify"],
                     )
                 with col_enable:
                     st.button(
                         "Enable",
-                        type=st.session_state.types["enable"],
+                        type="primary",
                         on_click=switch_button,
+                        disabled=st.session_state.disabled["enable"],
                         args=["enable"],
                     )
                 with col_disable:
                     st.button(
                         "Disable",
-                        type=st.session_state.types["disable"],
+                        type="primary",
+                        disabled=st.session_state.disabled["disable"],
                         on_click=switch_button,
                         args=["disable"],
                     )
@@ -81,7 +84,8 @@ else:
                     st.button(
                         "Delete",
                         key="delete",
-                        type=st.session_state.types["delete"],
+                        type="primary",
+                        disabled=st.session_state.disabled["delete"],
                         on_click=switch_button,
                         args=["delete"],
                     )
@@ -102,18 +106,17 @@ else:
                     selected_rows = update_and_show_selected("enabling")
                     col_confirm, col_cancel = st.columns([0.1, 0.5])
                     with col_confirm:
-                        confirm_clicked = st.button("Confirm", key="confirm", type="primary")
-                    if confirm_clicked:
-                        enable_users(selected_rows)
+                        confirm_enable = st.button("Confirm", key="confirm", type="primary")
                     with col_cancel:
                         st.button(
                             "Cancel",
                             key="cancel",
                             type="secondary",
-                            # on_click=switch_enable_button,
                             on_click=switch_button,
                             args=["enable"],
                         )
+                    if confirm_enable:
+                        enable_users(selected_rows)
 
                 # disable users
 
@@ -121,8 +124,7 @@ else:
                     selected_rows = update_and_show_selected("disabling")
                     col_confirm, col_cancel = st.columns([0.1, 0.5])
                     with col_confirm:
-                        if st.button("Confirm", key="confirm", type="primary"):
-                            disable_users(selected_rows)
+                        confirm_disable = st.button("Confirm", key="confirm", type="primary")
                     with col_cancel:
                         st.button(
                             "Cancel",
@@ -131,6 +133,8 @@ else:
                             on_click=switch_button,
                             args=["disable"],
                         )
+                    if confirm_disable:
+                        disable_users(selected_rows)
 
                 # delete users
 
@@ -138,17 +142,18 @@ else:
                     selected_rows = update_and_show_selected("deletion")
                     col_confirm, col_cancel = st.columns([0.1, 0.5])
                     with col_confirm:
-                        if st.button("Confirm", key="confirm", type="primary"):
-                            delete_users(selected_rows)
+                        confirm_deletion = st.button("Confirm", key="confirm", type="primary")
                     with col_cancel:
                         st.button(
                             "Cancel",
                             key="cancel",
                             type="secondary",
-                            # on_click=switch_delete_button,
                             on_click=switch_button,
                             args=["delete"],
                         )
+                    if confirm_deletion:
+                        delete_users(selected_rows)
+                        
 
             if st.session_state.message:
                 for msg in st.session_state.message:
