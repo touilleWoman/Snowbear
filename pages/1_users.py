@@ -45,116 +45,118 @@ else:
         if "nb_selected" not in st.session_state:
             st.session_state.nb_selected = 0
 
-        show_df()
+        with st.container(border=True):
+            show_df()
 
-        # nb_selected is updated in the show_df function
-        if st.session_state.nb_selected > 0:
-            col_modif, col_enable, col_disable, col_delete = st.columns([1, 1, 1, 8])
+        with st.container(border=True):
+            # nb_selected is updated in the show_df function
+            if st.session_state.nb_selected > 0:
+                col_modif, col_enable, col_disable, col_delete = st.columns([1, 1, 1, 8])
 
-            # modify one user
-            with col_modif:
-                st.button(
-                    "Modify",
-                    help="select one user to modify",
-                    type=st.session_state.types["modify"],
-                    disabled=(st.session_state.nb_selected != 1),
-                    on_click=switch_button,
-                    args=["modify"],
-                )
-            with col_enable:
-                st.button(
-                    "Enable",
-                    type=st.session_state.types["enable"],
-                    on_click=switch_button,
-                    args=["enable"],
-                )
-            with col_disable:
-                st.button(
-                    "Disable",
-                    type=st.session_state.types["disable"],
-                    on_click=switch_button,
-                    args=["disable"],
-                )
-            with col_delete:
-                st.button(
-                    "Delete",
-                    key="delete",
-                    type=st.session_state.types["delete"],
-                    on_click=switch_button,
-                    args=["delete"],
-                )
-
-            if st.session_state.clicks["modify"]:
-                st.session_state.df_view = st.session_state.df_buffer.copy(deep=True)
-                selected_row = st.session_state.df_view[
-                    st.session_state.df_view["Action"]
-                ]
-                try:
-                    form_of_modifications(selected_row.iloc[0])
-                except Exception as e:
-                    st.write(f"selected_row: {selected_row}")
-                    st.write(e)
-
-            # enable users
-            if st.session_state.clicks["enable"]:
-                selected_rows = update_and_show_selected("enabling")
-                col_confirm, col_cancel = st.columns([0.1, 0.5])
-                with col_confirm:
-                    if st.button("Confirm", key="confirm", type="primary"):
-                        enable_users(selected_rows)
-                with col_cancel:
+                # modify one user
+                with col_modif:
                     st.button(
-                        "Cancel",
-                        key="cancel",
-                        type="secondary",
-                        # on_click=switch_enable_button,
+                        "Modify",
+                        help="select one user to modify",
+                        type=st.session_state.types["modify"],
+                        disabled=(st.session_state.nb_selected != 1),
+                        on_click=switch_button,
+                        args=["modify"],
+                    )
+                with col_enable:
+                    st.button(
+                        "Enable",
+                        type=st.session_state.types["enable"],
                         on_click=switch_button,
                         args=["enable"],
                     )
-
-            # disable users
-
-            if st.session_state.clicks["disable"]:
-                selected_rows = update_and_show_selected("disabling")
-                col_confirm, col_cancel = st.columns([0.1, 0.5])
-                with col_confirm:
-                    if st.button("Confirm", key="confirm", type="primary"):
-                        disable_users(selected_rows)
-                with col_cancel:
+                with col_disable:
                     st.button(
-                        "Cancel",
-                        key="cancel",
-                        type="secondary",
-                        # on_click=switch_disable_button,
+                        "Disable",
+                        type=st.session_state.types["disable"],
                         on_click=switch_button,
                         args=["disable"],
                     )
-
-            # delete users
-
-            if st.session_state.clicks["delete"]:
-                selected_rows = update_and_show_selected("deletion")
-                col_confirm, col_cancel = st.columns([0.1, 0.5])
-                with col_confirm:
-                    if st.button("Confirm", key="confirm", type="primary"):
-                        delete_users(selected_rows)
-                with col_cancel:
+                with col_delete:
                     st.button(
-                        "Cancel",
-                        key="cancel",
-                        type="secondary",
-                        # on_click=switch_delete_button,
+                        "Delete",
+                        key="delete",
+                        type=st.session_state.types["delete"],
                         on_click=switch_button,
                         args=["delete"],
                     )
 
-        if st.session_state.message:
-            for msg in st.session_state.message:
-                if "Error" in msg:
-                    st.error(msg, icon="❌")
-                else:
-                    st.success(msg, icon="✅")
-            st.session_state.message = []
+                if st.session_state.clicks["modify"]:
+                    st.session_state.df_view = st.session_state.df_buffer.copy(deep=True)
+                    selected_row = st.session_state.df_view[
+                        st.session_state.df_view["Action"]
+                    ]
+                    try:
+                        form_of_modifications(selected_row.iloc[0])
+                    except Exception as e:
+                        st.write(f"selected_row: {selected_row}")
+                        st.write(e)
+
+                # enable users
+                if st.session_state.clicks["enable"]:
+                    selected_rows = update_and_show_selected("enabling")
+                    col_confirm, col_cancel = st.columns([0.1, 0.5])
+                    with col_confirm:
+                        confirm_clicked = st.button("Confirm", key="confirm", type="primary")
+                    if confirm_clicked:
+                        enable_users(selected_rows)
+                    with col_cancel:
+                        st.button(
+                            "Cancel",
+                            key="cancel",
+                            type="secondary",
+                            # on_click=switch_enable_button,
+                            on_click=switch_button,
+                            args=["enable"],
+                        )
+
+                # disable users
+
+                if st.session_state.clicks["disable"]:
+                    selected_rows = update_and_show_selected("disabling")
+                    col_confirm, col_cancel = st.columns([0.1, 0.5])
+                    with col_confirm:
+                        if st.button("Confirm", key="confirm", type="primary"):
+                            disable_users(selected_rows)
+                    with col_cancel:
+                        st.button(
+                            "Cancel",
+                            key="cancel",
+                            type="secondary",
+                            on_click=switch_button,
+                            args=["disable"],
+                        )
+
+                # delete users
+
+                if st.session_state.clicks["delete"]:
+                    selected_rows = update_and_show_selected("deletion")
+                    col_confirm, col_cancel = st.columns([0.1, 0.5])
+                    with col_confirm:
+                        if st.button("Confirm", key="confirm", type="primary"):
+                            delete_users(selected_rows)
+                    with col_cancel:
+                        st.button(
+                            "Cancel",
+                            key="cancel",
+                            type="secondary",
+                            # on_click=switch_delete_button,
+                            on_click=switch_button,
+                            args=["delete"],
+                        )
+
+            if st.session_state.message:
+                for msg in st.session_state.message:
+                    if "Error" in msg:
+                        st.error(msg, icon="❌")
+                    else:
+                        st.success(msg, icon="✅")
+                st.session_state.message = []
 
     with tab2:
         if "message_tab2" not in st.session_state:
@@ -202,3 +204,6 @@ else:
             else:
                 st.success(msg, icon="✅")
             st.session_state.message_tab2 = ""
+
+
+
