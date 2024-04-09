@@ -2,8 +2,6 @@ import streamlit as st
 import snowflake.connector
 from charge_translations import charge_translations
 from snow_oauth import SnowOauth
-from footer import footer
-from utils.admin_table import get_types
 
 
 def logout():
@@ -40,7 +38,7 @@ def show_user():
         st.button(st.session_state.translations["logout"], on_click=logout)
 
 
-def authenticated_menu(show_admin_radio):
+def authenticated_menu():
     if "selected_lang" not in st.session_state:
         st.session_state.selected_lang = None
 
@@ -68,14 +66,12 @@ def authenticated_menu(show_admin_radio):
     )
 
     st.sidebar.divider()
-    st.sidebar.page_link("pages/5_admin.py", label="Admin")
-    if show_admin_radio:
-        # Initialize st.session_state.type
-        st.session_state.type = st.sidebar.radio(
-            "types",
-            get_types(),
-            label_visibility="hidden",
-        )
+    st.sidebar.title("Admin")
+    st.sidebar.page_link("pages/5_admin_env.py", label=st.session_state.translations["environments"])
+    st.sidebar.page_link("pages/6_admin_zone.py", label="Zones")
+    st.sidebar.page_link("pages/7_admin_role.py", label=st.session_state.translations["roles"])
+    st.sidebar.page_link("pages/8_admin_rights.py", label=st.session_state.translations["rights"])
+
     show_user()
     st.sidebar.divider()
     st.sidebar.caption("Powered by")
@@ -94,26 +90,20 @@ def unauthenticated_menu():
     oauth = SnowOauth(label="Se connecter à Snowflake")
     oauth.start_session()
     # Show a navigation menu for unauthenticated users
-    st.sidebar.page_link("home.py", label="Home")
+    st.switch_page("home.py")
+    # st.sidebar.page_link("home.py", label="Home")
 
 
-def menu(show_admin_radio=False):
+def menu():
     # Determine if a user is logged in or not, then show the correct
     # navigation menu
 
     if "snow_connector" not in st.session_state:
         unauthenticated_menu()
     else:
-        authenticated_menu(show_admin_radio)
-    footer()
+        authenticated_menu()
+    
 
-
-def menu_with_redirect():
-    # Redirect users to the main page if not logged in, otherwise continue to
-    # render the navigation menu
-    if "snow_connector" not in st.session_state:
-        st.switch_page("home.py")
-    menu()
 
 
 if __name__ == "__main__":

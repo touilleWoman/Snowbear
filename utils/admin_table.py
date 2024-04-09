@@ -15,10 +15,10 @@ def load_params_data():
         cur.close()
     return df
 
-def get_types():
-    df = load_params_data()
-    types = df.TYPE.unique()
-    return types
+# def get_types():
+#     df = load_params_data()
+#     types = df.TYPE.unique()
+#     return types
 
 def show_selected_params(type):
     df = load_params_data()
@@ -26,4 +26,5 @@ def show_selected_params(type):
     st.data_editor(
         filtered_df,
         hide_index=True,
+        column_config={"MODIFIER": st.session_state.translations["modifier"]},
     )

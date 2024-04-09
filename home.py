@@ -1,6 +1,8 @@
 import streamlit as st
 
 from menu import menu
+from footer import footer
+
 
 if "snow_connector" in st.session_state:
     sidebar_state = "expanded"
@@ -13,5 +15,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state=sidebar_state,
 )
+footer()
 
 menu()
