@@ -1,7 +1,8 @@
-import streamlit as st
 import snowflake.connector
+import streamlit as st
+
+from footer import footer
 from charge_translations import charge_translations
-from snow_oauth import SnowOauth
 
 
 def logout():
@@ -67,44 +68,36 @@ def authenticated_menu():
 
     st.sidebar.divider()
     st.sidebar.title("Admin")
-    st.sidebar.page_link("pages/5_admin_env.py", label=st.session_state.translations["environments"])
+    st.sidebar.page_link(
+        "pages/5_admin_env.py", label=st.session_state.translations["environments"]
+    )
     st.sidebar.page_link("pages/6_admin_zone.py", label="Zones")
-    st.sidebar.page_link("pages/7_admin_role.py", label=st.session_state.translations["roles"])
-    st.sidebar.page_link("pages/8_admin_rights.py", label=st.session_state.translations["rights"])
+    st.sidebar.page_link(
+        "pages/7_admin_role.py", label=st.session_state.translations["roles"]
+    )
+    st.sidebar.page_link(
+        "pages/8_admin_rights.py", label=st.session_state.translations["rights"]
+    )
 
     show_user()
     st.sidebar.divider()
     st.sidebar.caption("Powered by")
     st.sidebar.image("./images/logo_hardis.png", use_column_width=True)
 
-
-def unauthenticated_menu():
-    col_hardis, col_partner = st.columns([1, 6])
-    with col_hardis:
-        st.image("./images/logo_hardis.png", width=200)
-    with col_partner:
-        st.image("./images/place_holder.jpg", width=200)
-
-    st.header("❄️ Welcome to your SNOW BEAR ❄️")
-    st.header("❄️ Bienvenue à votre SNOW BEAR ❄️")
-    oauth = SnowOauth(label="Se connecter à Snowflake")
-    oauth.start_session()
     # Show a navigation menu for unauthenticated users
-    st.switch_page("home.py")
     # st.sidebar.page_link("home.py", label="Home")
 
 
-def menu():
+def menu_with_redirection():
     # Determine if a user is logged in or not, then show the correct
     # navigation menu
 
     if "snow_connector" not in st.session_state:
-        unauthenticated_menu()
+        st.switch_page("home.py")
     else:
         authenticated_menu()
-    
-
+        footer()
 
 
 if __name__ == "__main__":
-    menu()
+    menu_with_redirection()
