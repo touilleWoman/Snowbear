@@ -1,27 +1,22 @@
 import streamlit as st
 import html
+import time
 from .users_table import load_user_data
 
 
 def switch_button(label):
     """	
     switch the button to the opposite state
-    When one button is clicked, all the others are set to False
-    with type "secondary"
+    When one button is clicked, all the others are set to False and disabled
+    when one button is unclicked, all the others are set to False and enabled
     """
     clicks = st.session_state.clicks
-    types = st.session_state.types
+    disabled = st.session_state.disabled
     clicks[label] = not clicks[label]
     for key in clicks.keys():
         if key != label:
             clicks[key] = False
-    if clicks[label]:
-        for key in types.keys():
-            if key != label:
-                types[key] = "secondary"
-    else:
-        for key in types.keys():
-            types[key] = "primary"
+            disabled[key] = not disabled[key]
 
 
 
@@ -61,6 +56,7 @@ def new_user(user_name, first_name, last_name, email, login, password=""):
 
 
 def disable_users(selected_rows):
+    msgs = []
     try:
         for _index, row in selected_rows.iterrows():
             name = row["name"]
@@ -69,11 +65,14 @@ def disable_users(selected_rows):
                         """
             cur.execute(query)
             # succcess messages will be displayed after the rerun
-            st.session_state.message.append(f"{cur.fetchone()[0]} {query}")
+            msgs.append(f"USER {name} disabled")
     except Exception as e:
         st.session_state.message.append(f"Error: {e}")
     else:
         switch_button("disable")
+        for msg in msgs:
+            st.success(msg)
+            time.sleep(1)
     finally:
         cur.close()
         clear_cache_then_rerun()
@@ -81,6 +80,7 @@ def disable_users(selected_rows):
 
 def enable_users(selected_rows):
     try:
+        msgs = []
         for _index, row in selected_rows.iterrows():
             name = row["name"]
             cur = st.session_state.snow_connector.cursor()
@@ -88,11 +88,14 @@ def enable_users(selected_rows):
                         """
             cur.execute(sql)
             # succcess messages will be displayed after the rerun
-            st.session_state.message.append(f"{cur.fetchone()[0]} {sql}")
+            msgs.append(f"USER {name} enabled")
     except Exception as e:
         st.session_state.message.append(f"Error: {e}")
     else:
         switch_button("enable")
+        for msg in msgs:
+            st.toast(msg, icon="✅")
+            time.sleep(1)
     finally:
         cur.close()
         clear_cache_then_rerun()
@@ -100,6 +103,7 @@ def enable_users(selected_rows):
 
 def delete_users(selected_rows):
     try:
+        msgs = []
         for _index, row in selected_rows.iterrows():
             name = row["name"]
             cur = st.session_state.snow_connector.cursor()
@@ -107,12 +111,14 @@ def delete_users(selected_rows):
                 f"""DROP USER "{name}"
                         """
             )
-            # succcess messages will be displayed after the rerun
-            st.session_state.message.append(cur.fetchone()[0])
+            msgs.append(cur.fetchone()[0])
     except Exception as e:
         st.session_state.message.append(f"Error: {e}")
     else:
         switch_button("delete")
+        for msg in msgs:
+            st.success(msg, icon="✅")
+            time.sleep(1)
     finally:
         cur.close()
         clear_cache_then_rerun()
@@ -120,17 +126,21 @@ def delete_users(selected_rows):
 
 def modify_user(name, modified_fields):
     try:
+        msgs = []
         for label, modif in modified_fields.items():
             modif = html.escape(modif)
             cur = st.session_state.snow_connector.cursor()
             query = f"""ALTER USER "{name}" SET {label} = "{modif}"
                         """
             cur.execute(query)
-            st.session_state.message.append(f"{cur.fetchone()[0]} {query}")
+            msgs.append(f"USER {name} altered: {label} changed to {modif}")
     except Exception as e:
         st.session_state.message.append(f"Error: {e}")
     else:
         switch_button("modify")
+        for msg in msgs:
+            st.success(msg, icon="✅")
+            time.sleep(1)
     finally:
         cur.close()
         clear_cache_then_rerun()
