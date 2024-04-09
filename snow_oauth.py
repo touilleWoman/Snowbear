@@ -91,11 +91,9 @@ class SnowOauth:
                 "warehouse":self.config["warehouse"]
             }
             try:
+                # qmark binding is server side binding, we choose it to avoid sql injection
+                snowflake.connector.paramstyle='qmark'
                 st.session_state["snow_connector"] = snowflake.connector.connect(**snow_configs)
-
-                # st.session_state["snowpark_session"] = Session.builder.configs(
-                #     snow_configs
-                # ).create()
                 st.success("Connected to snowflake !")
                 st.rerun()
             except Exception as e:

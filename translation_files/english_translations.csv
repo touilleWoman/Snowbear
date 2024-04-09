@@ -11,3 +11,4 @@ parameters, Parameters
 environments, Environments
 rights, Rights
 modifier, MODIFIER
+create_env, Create a new environment

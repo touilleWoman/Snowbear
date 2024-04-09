@@ -1,7 +1,7 @@
 import streamlit as st
 
 from menu import menu_with_redirection
-
+from utils.tools import clear_form
 from utils.users_management import (
     delete_users,
     disable_users,
@@ -15,10 +15,6 @@ from utils.users_table import show_df
 st.set_page_config(page_title="Users", layout="wide", initial_sidebar_state="auto")
 
 menu_with_redirection()
-
-
-def clear_form():
-    st.session_state.form_id += "1"
 
 
 def update_and_show_selected(action_label):
@@ -83,9 +79,7 @@ with tab1:
 
         if st.session_state.clicks["modify"]:
             st.session_state.df_view = st.session_state.df_buffer.copy(deep=True)
-            selected_row = st.session_state.df_view[
-                st.session_state.df_view["Action"]
-            ]
+            selected_row = st.session_state.df_view[st.session_state.df_view["Action"]]
             try:
                 form_of_modifications(selected_row.iloc[0])
             except Exception as e:
@@ -161,9 +155,7 @@ with tab2:
     st.header("Create a new user")
     container = st.container(border=True)
     with container:
-        with st.form(
-            key=st.session_state.form_id, border=False, clear_on_submit=True
-        ):
+        with st.form(key=st.session_state.form_id, border=False, clear_on_submit=True):
             # mandatary fields
             user_name = st.text_input("User name*")
             first_name = st.text_input("First name*")
@@ -171,9 +163,7 @@ with tab2:
             email = st.text_input("email*")
             login = st.text_input("login*")
             # optional fields
-            password1 = st.text_input(
-                "Enter password", type="password", help="optinal"
-            )
+            password1 = st.text_input("Enter password", type="password", help="optinal")
             password2 = st.text_input(
                 "Confirm password", type="password", help="optinal"
             )
@@ -181,15 +171,18 @@ with tab2:
                 st.error("Passwords do not match. Please try again.")
 
             all_filled = all([user_name, first_name, last_name, email, login])
-            submitted = st.form_submit_button("Submit", type="primary")
+            submitted = st.form_submit_button(
+                "Submit",
+                type="primary",
+            )
 
             if submitted and password1 == password2:
                 if all_filled:
-                    new_user(
-                        user_name, first_name, last_name, email, login, password1
-                    )
+                    new_user(user_name, first_name, last_name, email, login, password1)
                 else:
                     st.error("Fields marked with * are mandatory.")
+
+                new_user(user_name, first_name, last_name, email, login, password1)
         st.button("Reset", type="secondary", on_click=clear_form)
 
     if st.session_state.message_tab2:
