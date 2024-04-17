@@ -12,3 +12,9 @@ environments, Environments
 rights, Rights
 modifier, MODIFIER
 create_env, Create a new environment
+password_mismatch, Passwords do not match. Please try again.
+password_length, Password must be at least 8 characters long.
+password_uppercase, At least one uppercase letter is required for password.
+password_lowercase, At least one lowercase letter is required for password.
+password_digit, At least one digit is required for password.
+mandatory_fields, Fields marked with * are mandatory.

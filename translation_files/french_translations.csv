@@ -12,3 +12,9 @@ environments, Environnements
 rights, Droits
 modifier, MODIFICATEUR
 create_env, Créer un nouvel environnement
+password_mismatch, Les mots de passe saisis ne correspondent pas. Veuillez réessayer.
+password_length, Le mot de passe doit contenir au moins 8 caractères.
+password_uppercase, Au moins une lettre majuscule est requise pour le mot de passe.
+password_lowercase, Au moins une lettre minuscule est requise pour le mot de passe.
+password_digit, Au moins un chiffre est requis pour le mot de passe.
+mandatory_fields, Les champs marqués d'un * sont obligatoires.

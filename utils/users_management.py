@@ -70,9 +70,7 @@ def disable_users(selected_rows):
         st.session_state.message.append(f"Error: {e}")
     else:
         switch_button("disable")
-        for msg in msgs:
-            st.success(msg)
-            time.sleep(1)
+        st.session_state.message.extend(msgs)
     finally:
         cur.close()
         clear_cache_then_rerun()
@@ -93,9 +91,7 @@ def enable_users(selected_rows):
         st.session_state.message.append(f"Error: {e}")
     else:
         switch_button("enable")
-        for msg in msgs:
-            st.toast(msg, icon="✅")
-            time.sleep(1)
+        st.session_state.message.extend(msgs)
     finally:
         cur.close()
         clear_cache_then_rerun()
@@ -116,9 +112,7 @@ def delete_users(selected_rows):
         st.session_state.message.append(f"Error: {e}")
     else:
         switch_button("delete")
-        for msg in msgs:
-            st.success(msg, icon="✅")
-            time.sleep(1)
+        st.session_state.message.extend(msgs)
     finally:
         cur.close()
         clear_cache_then_rerun()
@@ -138,31 +132,27 @@ def modify_user(name, modified_fields):
         st.session_state.message.append(f"Error: {e}")
     else:
         switch_button("modify")
-        for msg in msgs:
-            st.success(msg, icon="✅")
-            time.sleep(1)
+        st.session_state.message.extend(msgs)
     finally:
         cur.close()
         clear_cache_then_rerun()
 
 
 def password_validation(password1, password2):
-    if password1 != password2:
-        st.error("Passwords do not match. Please try again.")
-        return False
-    if password1 and len(password1) < 8:
-        st.error("Password must be at least 8 characters long")
-        return False
-    if not any([char.isupper() for char in password1]):
-        st.error("At least one uppercase letter is required for password")
-        return False
-    if not any([char.islower() for char in password1]):
-        st.error("At least one lowercase letter is required for password")
-        return False
-    if not any([char.isdigit() for char in password1]):
-        st.error("At least one digit is required for password")
-        return False
-    return True
+    conditions = [
+        (password1 != password2, st.session_state.translations["password_mismatch"]),
+        (len(password1) < 8, st.session_state.translations["password_length"]),
+        (not any(char.isupper() for char in password1), st.session_state.translations["password_uppercase"]),
+        (not any(char.islower() for char in password1), st.session_state.translations["password_lowercase"]),
+        (not any(char.isdigit() for char in password1), st.session_state.translations["password_digit"]),
+    ]
+
+    valid = True
+    for condition, message in conditions:
+        if condition:
+            st.toast(f":red[{message}]", icon="❌")
+            valid = False
+    return valid
 
 
 def form_of_modifications(selected_row):

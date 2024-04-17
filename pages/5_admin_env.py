@@ -30,5 +30,5 @@ with tab2:
                 if all_filled:
                     admin_new_type("Env", short_desc, long_des)
                 else:
-                    st.error("Please fill all the fields")
+                    st.toast(":red[Please fill all the fields]", icon="❌")
         st.button("Reset", type="secondary", on_click=clear_form)
