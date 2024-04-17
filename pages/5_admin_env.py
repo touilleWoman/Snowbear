@@ -14,7 +14,7 @@ with tab1:
     show_selected_params("Env")
     
 with tab2:
-    st.header(st.session_state.translations["create_env"])
+    st.header(st.session_state.transl["create_env"])
     container = st.container(border=True)
     if "form_id" not in st.session_state:
         st.session_state.form_id = "new_env"

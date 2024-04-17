@@ -9,21 +9,13 @@ from utils.users_management import (
     form_of_modifications,
     new_user,
     switch_button,
+    update_and_show_selected,
 )
 from utils.users_table import show_df
 
 st.set_page_config(page_title="Users", layout="wide", initial_sidebar_state="auto")
 
 menu_with_redirection()
-
-
-def update_and_show_selected(action_label):
-    st.session_state.df_view = st.session_state.df_buffer.copy(deep=True)
-    selected_rows = st.session_state.df_view[st.session_state.df_view["Action"]]
-    selected_rows = selected_rows.drop(columns=["Action"])
-    st.warning(f"Do you confirm the {action_label} of the following users?")
-    st.write(selected_rows)
-    return selected_rows
 
 
 tab1, tab2 = st.tabs([" 📋Users List ", "  ➕New User "])
@@ -54,8 +46,8 @@ with tab1:
             # modify one user
             with col_modif:
                 st.button(
-                    "Modify",
-                    help="select one user to modify",
+                    st.session_state.transl["modify"],
+                    help=st.session_state.transl["modify_condition"],
                     type="primary",
                     disabled=(st.session_state.nb_selected != 1)
                     or st.session_state.disabled["modify"],
@@ -64,7 +56,7 @@ with tab1:
                 )
             with col_enable:
                 st.button(
-                    "Enable",
+                    st.session_state.transl["enable"],
                     type="primary",
                     on_click=switch_button,
                     disabled=st.session_state.disabled["enable"],
@@ -72,7 +64,7 @@ with tab1:
                 )
             with col_disable:
                 st.button(
-                    "Disable",
+                    st.session_state.transl["disable"],
                     type="primary",
                     disabled=st.session_state.disabled["disable"],
                     on_click=switch_button,
@@ -80,7 +72,7 @@ with tab1:
                 )
             with col_delete:
                 st.button(
-                    "Delete",
+                    st.session_state.transl["delete"],
                     key="delete",
                     type="primary",
                     disabled=st.session_state.disabled["delete"],
@@ -104,7 +96,7 @@ with tab1:
 
             # enable users
             if st.session_state.clicks["enable"]:
-                selected_rows = update_and_show_selected("enabling")
+                selected_rows = update_and_show_selected(st.session_state.transl["enabling"])
                 col_confirm, col_cancel = st.columns([0.1, 0.5])
                 with col_confirm:
                     enable_confirmed = st.button(
@@ -123,7 +115,7 @@ with tab1:
 
             # disable users
             if st.session_state.clicks["disable"]:
-                selected_rows = update_and_show_selected("disabling")
+                selected_rows = update_and_show_selected(st.session_state.transl["disabling"])
                 col_confirm, col_cancel = st.columns([0.1, 0.5])
                 with col_confirm:
                     disable_confirmed = st.button(
@@ -142,7 +134,9 @@ with tab1:
 
             # delete users
             if st.session_state.clicks["delete"]:
-                selected_rows = update_and_show_selected("deletion")
+                selected_rows = update_and_show_selected(
+                    st.session_state.transl["deletion"]
+                )
                 col_confirm, col_cancel = st.columns([0.1, 0.5])
                 with col_confirm:
                     delete_confirmed = st.button(
@@ -173,23 +167,23 @@ with tab2:
         st.session_state.message_tab2 = ""
     if "form_id" not in st.session_state:
         st.session_state.form_id = "new_user"
-    st.header("Create a new user")
+    st.header(st.session_state.transl["new_user"])
     container = st.container(border=True)
     with container:
         with st.form(key=st.session_state.form_id, border=False, clear_on_submit=True):
             # mandatary fields
             user_name = st.text_input("User name*")
-            first_name = st.text_input("First name*")
-            last_name = st.text_input("last name*")
-            email = st.text_input("email*")
-            login = st.text_input("login*")
+            first_name = st.text_input(st.session_state.transl["first_name"] + "*")
+            last_name = st.text_input(st.session_state.transl["last_name"] + "*")
+            email = st.text_input("Email*")
+            login = st.text_input("Login*")
             # optional fields
-            password1 = st.text_input("Enter password", type="password", help="optinal")
+            password1 = st.text_input(st.session_state.transl["enter_pwd"], type="password", help="optinal")
             password2 = st.text_input(
-                "Confirm password", type="password", help="optinal"
+                st.session_state.transl["confirm_pwd"], type="password", help="optinal"
             )
             if password1 != password2:
-                msg = st.session_state.translations["password_mismatch"]
+                msg = st.session_state.transl["pwd_mismatch"]
                 st.toast(f":red[{msg}]", icon="❌")
 
             all_filled = all([user_name, first_name, last_name, email, login])
@@ -202,7 +196,7 @@ with tab2:
                 if all_filled:
                     new_user(user_name, first_name, last_name, email, login, password1)
                 else:
-                    msg = st.session_state.translations["mandatory_fields"]
+                    msg = st.session_state.transl["mandatory_fields"]
                     st.toast(f":red[{msg}]", icon="❌")
         st.button("Reset", type="secondary", on_click=clear_form)
 

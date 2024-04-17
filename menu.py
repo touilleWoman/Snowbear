@@ -8,7 +8,7 @@ from charge_translations import charge_translations
 def logout():
     if "snow_connector" in st.session_state:
         st.session_state["snow_connector"].close()
-        st.success(st.session_state.translations["disconnected"])
+        st.success(st.session_state.transl["disconnected"])
         st.session_state.clear()
         st.cache_data.clear()
         st.query_params.clear()
@@ -36,47 +36,50 @@ def show_user():
     with st.sidebar:
         st.divider()
         st.write(f"❄️{user}")
-        st.button(st.session_state.translations["logout"], on_click=logout)
+        st.button(st.session_state.transl["logout"], on_click=logout)
 
 
 def authenticated_menu():
     if "selected_lang" not in st.session_state:
         st.session_state.selected_lang = None
+    if "transl" not in st.session_state:
+        st.session_state.transl = None
 
     with st.sidebar:
         # default value will be 'fr' without selection
         selected_lang = st.selectbox("🌐", ["fr", "en"])
         st.divider()
 
-    st.session_state.translations = charge_translations(selected_lang)
+    
+    st.session_state.transl = charge_translations(selected_lang)
     st.session_state.selected_lang = selected_lang
 
     # Show a navigation menu for authenticated users
     st.sidebar.page_link(
-        "pages/1_users.py", label=st.session_state.translations["users"]
+        "pages/1_users.py", label=st.session_state.transl["users"]
     )
     st.sidebar.page_link(
-        "pages/2_roles.py", label=st.session_state.translations["roles"]
+        "pages/2_roles.py", label=st.session_state.transl["roles"]
     )
     st.sidebar.page_link(
-        "pages/3_databases.py", label=st.session_state.translations["databases"]
+        "pages/3_databases.py", label=st.session_state.transl["databases"]
     )
     st.sidebar.page_link(
         "pages/4_list_of_projects.py",
-        label=st.session_state.translations["projects_list"],
+        label=st.session_state.transl["projects_list"],
     )
 
     st.sidebar.divider()
     st.sidebar.title("Admin")
     st.sidebar.page_link(
-        "pages/5_admin_env.py", label=st.session_state.translations["environments"]
+        "pages/5_admin_env.py", label=st.session_state.transl["environments"]
     )
     st.sidebar.page_link("pages/6_admin_zone.py", label="Zones")
     st.sidebar.page_link(
-        "pages/7_admin_role.py", label=st.session_state.translations["roles"]
+        "pages/7_admin_role.py", label=st.session_state.transl["roles"]
     )
     st.sidebar.page_link(
-        "pages/8_admin_rights.py", label=st.session_state.translations["rights"]
+        "pages/8_admin_rights.py", label=st.session_state.transl["rights"]
     )
 
     show_user()

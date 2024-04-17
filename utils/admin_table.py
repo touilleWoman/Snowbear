@@ -23,7 +23,7 @@ def show_selected_params(type):
     st.data_editor(
         filtered_df,
         hide_index=True,
-        column_config={"MODIFIER": st.session_state.translations["modifier"]},
+        column_config={"MODIFIER": st.session_state.transl["modifier"]},
     )
 
 

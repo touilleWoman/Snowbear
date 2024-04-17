@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+
 @st.cache_data
 def load_user_data():
     cur = st.session_state.snow_connector.cursor()
@@ -114,9 +115,14 @@ def show_df():
     st.data_editor(
         st.session_state.df_view,
         key="users_modifs",
-        column_config={"name": "user name"},
+        column_config={
+            "name": "User name",
+            "login_name": "Login name",
+            "first_name": st.session_state.transl["first_name"],
+            "last_name": st.session_state.transl["last_name"],
+            "disabled": st.session_state.transl["disabled"],
+            "email": "Email",
+            
+        },
         on_change=save_selection_in_buffer,
     )
-
-
-

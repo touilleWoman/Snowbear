@@ -1,5 +1,4 @@
 key,en
-greeting,Welcome to your SNOW BEAR
 disconnected,Successfully disconnected
 logout,Log out
 users,Users
@@ -12,9 +11,23 @@ environments, Environments
 rights, Rights
 modifier, MODIFIER
 create_env, Create a new environment
-password_mismatch, Passwords do not match. Please try again.
-password_length, Password must be at least 8 characters long.
-password_uppercase, At least one uppercase letter is required for password.
-password_lowercase, At least one lowercase letter is required for password.
-password_digit, At least one digit is required for password.
+pwd_mismatch, Passwords do not match. Please try again.
+pwd_len, Password must be at least 8 characters long.
+pwd_uppercase, At least one uppercase letter is required for password.
+pwd_lowercase, At least one lowercase letter is required for password.
+pwd_digit, At least one digit is required for password.
 mandatory_fields, Fields marked with * are mandatory.
+modify_condition, Select one user to modify.
+new_user, Create a new user
+first_name, First name
+last_name, Last name
+enter_pwd, Enter password
+confirm_pwd, Confirm password
+delete, Delete
+modify, Modify
+disable, Disable
+enable, Enable
+deletion, deletion
+disabling, disabling
+enabling, enabling
+disabled, Disabled

@@ -1,11 +1,12 @@
-import streamlit as st
 import html
-import time
+
+import streamlit as st
+
 from .users_table import load_user_data
 
 
 def switch_button(label):
-    """	
+    """
     switch the button to the opposite state
     When one button is clicked, all the others are set to False and disabled
     when one button is unclicked, all the others are set to False and enabled
@@ -17,7 +18,6 @@ def switch_button(label):
         if key != label:
             clicks[key] = False
             disabled[key] = not disabled[key]
-
 
 
 def clear_cache_then_rerun():
@@ -36,7 +36,7 @@ def new_user(user_name, first_name, last_name, email, login, password=""):
     login = html.escape(login)
     if password:
         password = html.escape(password)
-    
+
     cur = st.session_state.snow_connector.cursor()
     try:
         query = f"""
@@ -45,9 +45,9 @@ def new_user(user_name, first_name, last_name, email, login, password=""):
         if password:
             query += f" PASSWORD='{password}'"
         cur.execute(query)
-        
+
     except Exception as e:
-        st.session_state.message_tab2 =f"Error: {e}"
+        st.session_state.message_tab2 = f"Error: {e}"
     else:
         st.session_state.message_tab2 = cur.fetchone()[0]
     finally:
@@ -140,11 +140,20 @@ def modify_user(name, modified_fields):
 
 def password_validation(password1, password2):
     conditions = [
-        (password1 != password2, st.session_state.translations["password_mismatch"]),
-        (len(password1) < 8, st.session_state.translations["password_length"]),
-        (not any(char.isupper() for char in password1), st.session_state.translations["password_uppercase"]),
-        (not any(char.islower() for char in password1), st.session_state.translations["password_lowercase"]),
-        (not any(char.isdigit() for char in password1), st.session_state.translations["password_digit"]),
+        (password1 != password2, st.session_state.transl["password_mismatch"]),
+        (len(password1) < 8, st.session_state.transl["pwd_len"]),
+        (
+            not any(char.isupper() for char in password1),
+            st.session_state.transl["pwd_uppercase"],
+        ),
+        (
+            not any(char.islower() for char in password1),
+            st.session_state.transl["pwd_lowercase"],
+        ),
+        (
+            not any(char.isdigit() for char in password1),
+            st.session_state.transl["pwd_digit"],
+        ),
     ]
 
     valid = True
@@ -185,3 +194,25 @@ def form_of_modifications(selected_row):
         if password1:
             modified_fields["PASSWORD"] = password1
         modify_user(name, modified_fields)
+
+
+def update_and_show_selected(action_label):
+    st.session_state.df_view = st.session_state.df_buffer.copy(deep=True)
+    selected_rows = st.session_state.df_view[st.session_state.df_view["Action"]]
+    selected_rows = selected_rows.drop(columns=["Action"])
+    if st.session_state.transl["key"] == "en":
+        st.warning(f"Do you confirm the {action_label} of the following users?")
+    else:
+        st.warning(f"Confirmez-vous {action_label} des utilisateurs suivants ?")
+    st.dataframe(
+        selected_rows,
+        column_config={
+            "name": "User name",
+            "login_name": "Login name",
+            "first_name": st.session_state.transl["first_name"],
+            "last_name": st.session_state.transl["last_name"],
+            "disabled": st.session_state.transl["disabled"],
+            "email": "Email",
+        },
+    )
+    return selected_rows
