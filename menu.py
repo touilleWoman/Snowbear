@@ -40,19 +40,19 @@ def show_user():
 
 
 def authenticated_menu():
+    lang_options = ["fr", "en"]
     if "selected_lang" not in st.session_state:
-        st.session_state.selected_lang = None
+        st.session_state.selected_lang = lang_options[0]
     if "transl" not in st.session_state:
         st.session_state.transl = None
 
     with st.sidebar:
         # default value will be 'fr' without selection
-        selected_lang = st.selectbox("🌐", ["fr", "en"])
+        st.session_state.selected_lang = st.selectbox("🌐", ["fr", "en"], index=lang_options.index(st.session_state.selected_lang))
         st.divider()
 
     
-    st.session_state.transl = charge_translations(selected_lang)
-    st.session_state.selected_lang = selected_lang
+    st.session_state.transl = charge_translations(st.session_state.selected_lang)
 
     # Show a navigation menu for authenticated users
     st.sidebar.page_link(

@@ -4,7 +4,6 @@ from pathlib import Path
 import streamlit as st
 
 
-@st.cache_data
 def csv_to_dict(file_path):
     data_dict = {}
     with open(file_path, mode="r", encoding="utf-8") as csv_file:
@@ -14,7 +13,9 @@ def csv_to_dict(file_path):
     return data_dict
 
 
+@st.cache_data
 def charge_translations(lang="fr"):
+    print("Loading translations")
     if lang == "en":
         file_name = "english_translations.csv"
     else:
