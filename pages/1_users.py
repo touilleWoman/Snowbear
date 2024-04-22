@@ -11,7 +11,7 @@ from utils.users_management import (
     switch_button,
     update_and_show_selected,
 )
-from utils.users_table import show_df
+from utils.users_table import main_interaction
 
 st.set_page_config(page_title="Users", layout="wide", initial_sidebar_state="auto")
 
@@ -34,9 +34,9 @@ with tab1:
     first_container = st.container(border=True)
 
     with first_container:
-        show_df()
+        main_interaction()
 
-    # nb_selected is updated in the show_df function
+    # nb_selected is updated in the main_interaction function
     if st.session_state.nb_selected == 0:
         pass
     else:

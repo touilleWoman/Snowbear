@@ -63,7 +63,7 @@ def save_selection_in_buffer():
     update_nb_selected_in_session_state()
 
 
-def show_df():
+def main_interaction():
     """
     if user search for a user, then show filtered dataframe + selected users
     else show the original dataframe with selected users
@@ -122,7 +122,6 @@ def show_df():
             "last_name": st.session_state.transl["last_name"],
             "disabled": st.session_state.transl["disabled"],
             "email": "Email",
-            
         },
         on_change=save_selection_in_buffer,
     )
