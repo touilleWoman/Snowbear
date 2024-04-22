@@ -5,7 +5,7 @@ import streamlit as st
 from .users_table import load_user_data
 
 
-
+page = st.session_state.page
 
 
 def clear_cache_then_rerun():
@@ -55,10 +55,10 @@ def disable_users(selected_rows):
             # succcess messages will be displayed after the rerun
             msgs.append(f"USER {name} disabled")
     except Exception as e:
-        st.session_state.message.append(f"Error: {e}")
+        page.message.append(f"Error: {e}")
     else:
-        switch_button("disable")
-        st.session_state.message.extend(msgs)
+        page.switch_button("disable")
+        page.message.extend(msgs)
     finally:
         cur.close()
         clear_cache_then_rerun()
@@ -76,10 +76,10 @@ def enable_users(selected_rows):
             # succcess messages will be displayed after the rerun
             msgs.append(f"USER {name} enabled")
     except Exception as e:
-        st.session_state.message.append(f"Error: {e}")
+        page.message.append(f"Error: {e}")
     else:
-        switch_button("enable")
-        st.session_state.message.extend(msgs)
+        page.switch_button("enable")
+        page.message.extend(msgs)
     finally:
         cur.close()
         clear_cache_then_rerun()
@@ -97,10 +97,10 @@ def delete_users(selected_rows):
             )
             msgs.append(cur.fetchone()[0])
     except Exception as e:
-        st.session_state.message.append(f"Error: {e}")
+        page.message.append(f"Error: {e}")
     else:
-        switch_button("delete")
-        st.session_state.message.extend(msgs)
+        page.switch_button("delete")
+        page.message.extend(msgs)
     finally:
         cur.close()
         clear_cache_then_rerun()
@@ -117,10 +117,10 @@ def modify_user(name, modified_fields):
             cur.execute(query)
             msgs.append(f"USER {name} altered: {label} changed to {modif}")
     except Exception as e:
-        st.session_state.message.append(f"Error: {e}")
+        page.message.append(f"Error: {e}")
     else:
-        switch_button("modify")
-        st.session_state.message.extend(msgs)
+        page.switch_button("modify")
+        page.message.extend(msgs)
     finally:
         cur.close()
         clear_cache_then_rerun()

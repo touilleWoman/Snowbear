@@ -2,7 +2,7 @@ import streamlit as st
 
 from menu import menu_with_redirection
 
-from utils.admin_table import main_interaction, admin_new_type
+from utils.admin_table import main_interaction, admin_new_type, show_selected, delete_admin_params
 
 st.set_page_config(page_title="Environments", layout="wide", initial_sidebar_state="auto")
 
@@ -46,7 +46,46 @@ with tab1:
                     on_click=page.switch_button,
                     args=["delete"],
                 )
-                
+
+        second_container = st.container(border=True)
+        with second_container:
+            selected_rows = df[df["ACTION"]]
+            
+            # if page.clicks["modify"]:
+                # try:
+                #     form_of_modifications(selected_row.iloc[0])
+                # except Exception as e:
+                #     st.write(f"selected_row: {selected_row}")
+                #     st.write(e)
+
+            # delete users
+            if page.clicks["delete"]:
+                show_selected(selected_rows, st.session_state.transl["deletion"])
+                col_confirm, col_cancel = st.columns([0.1, 0.5])
+                with col_confirm:
+                    delete_confirmed = st.button(
+                        "Confirm", key="confirm", type="primary"
+                    )
+
+                with col_cancel:
+                    st.button(
+                        "Cancel",
+                        key="cancel",
+                        type="secondary",
+                        on_click=page.switch_button,
+                        args=["delete"],
+                    )
+                if delete_confirmed:
+                    delete_admin_params(selected_rows)
+
+    if page.message:
+        for msg in page.message:
+            if "Error" in msg:
+                st.toast(f":red[{msg}]", icon="❌")
+            else:
+                st.toast(f":green[{msg}]", icon="✅")
+        page.message = []
+              
     
 with tab2:
     st.header(st.session_state.transl["create_env"])

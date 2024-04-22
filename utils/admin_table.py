@@ -28,7 +28,7 @@ def main_interaction(type):
     """
     table and buttons for the page env/zone/roles
     """
-    
+
     df = load_params_data()
     filtered_df = df[df["TYPE"] == type]
 
@@ -40,31 +40,27 @@ def main_interaction(type):
     return updated_df
 
 
-def update_nb_selected_in_session_state():
-    """
-    check if the user selected at least one user
-    """
-
-    df = st.session_state.df_env_buffer
-    st.session_state.page.nb_selected = len(df[df["Action"]])
-
-
-def save_selection_in_buffer():
-    """
-    user clicked one selectbox,
-    in dataframe: st.session_state.df_env_buffer
-    update the column 'Action' with the new value(True/False)
-    """
-
-    df = st.session_state.df_env.copy(deep=True)
-    modifs = st.session_state.env_modifs["edited_rows"]
-    for index, value in modifs.items():
-        df.iloc[index, -1] = value["ACTION"]
-        name = df.iloc[index]["name"]
-        st.session_state.df_env_buffer.loc[
-            st.session_state.df_env_buffer["name"] == name, "Action"
-        ] = value["Action"]
-    update_nb_selected_in_session_state()
+def delete_admin_params(selected_rows):
+    page = st.session_state.page
+    try:
+        ids = tuple(selected_rows["ID"])
+        cur = st.session_state.snow_connector.cursor()
+        query = (
+            "DELETE FROM STREAMLIT.SNOWBEAR.parameterization WHERE id IN ({})".format(
+                ", ".join(['?'] * len(ids))
+            )
+        )
+        cur.execute(query, ids)
+    except Exception as e:
+        page.message.append(f"Error: {e}")
+    else:
+        msg = f"{selected_rows["SHORT_DESC"]} deleted"
+        page.message.append(msg)
+        page.switch_button("delete")
+    finally:
+        cur.close()
+        load_params_data.clear()
+        st.rerun()
 
 
 def admin_new_type(type, short_desc, long_desc):
@@ -83,3 +79,15 @@ def admin_new_type(type, short_desc, long_desc):
         cur.close()
         load_params_data.clear()
         st.rerun()
+
+
+def show_selected(selected_rows, action_label):
+    selected_rows = selected_rows.drop(columns=["ACTION"])
+    if st.session_state.transl["key"] == "en":
+        st.warning(f"Do you confirm the {action_label} of the following parameters?")
+    else:
+        st.warning(f"Confirmez-vous {action_label} des paramètres suivants ?")
+    st.dataframe(
+        selected_rows,
+        column_config={"MODIFIER": st.session_state.transl["modifier"]},
+    )

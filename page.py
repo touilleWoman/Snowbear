@@ -1,6 +1,3 @@
-import streamlit as st
-
-
 class Page:
     """
     this object is instantiated in the home.py with the name "home", and stored in the session state.
@@ -11,7 +8,6 @@ class Page:
     Attributes:
         name (str): The current active page name.
     """
-    
 
     def __init__(self, name) -> None:
         self.name = name
@@ -24,11 +20,10 @@ class Page:
         Parameters:
             present_page (str): The name of the page to switch to.
         """
-        
+
         if self.name == present_page:
             pass
         else:
-            st.write(f"Page switched to {present_page}")
             self.name = present_page
             if self.name == "environments":
                 self.init_env()
@@ -49,6 +44,8 @@ class Page:
         self.clicks = {label: False for label in labels}
         self.disabled = {label: False for label in labels}
         self.message = []
+        self.message_tab2 = ""
+        self.form_id = "new_env"
 
     def switch_button(self, label):
         """
@@ -64,7 +61,7 @@ class Page:
             if key != label:
                 clicks[key] = False
                 disabled[key] = not disabled[key]
-                
+
     def clear_form(self):
         """
         Since changing the parameters of a widget will reset it.
@@ -72,4 +69,4 @@ class Page:
         the value itself has no importance, only the change is important
 
         """
-        st.session_state.form_id += "1"
+        self.form_id += "1"
