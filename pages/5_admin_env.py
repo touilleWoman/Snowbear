@@ -3,23 +3,18 @@ import streamlit as st
 from menu import menu_with_redirection
 
 from utils.admin_table import main_interaction, admin_new_type
-from utils.tools import clear_form
-# from utils.users_management import switch_button
 
 st.set_page_config(page_title="Environments", layout="wide", initial_sidebar_state="auto")
+
+# when a page is switched, all page related variables are reset, see page.py
+page = st.session_state.page
+page.switched("environments")
 
 menu_with_redirection()
     
 tab1, tab2 = st.tabs([" 📋Env List ", "  ➕New Env "])
+
 with tab1:
-    if "clicks" not in st.session_state:
-        labels = ["delete", "modify"]
-        st.session_state.clicks = {label: False for label in labels}
-        st.session_state.disabled = {label: False for label in labels}
-    if "message" not in st.session_state:
-        st.session_state.message = []
-    if "nb_selected" not in st.session_state:
-        st.session_state.nb_selected = 0
     first_container = st.container(border=True)
     with first_container:
         df = main_interaction("Env")
@@ -38,8 +33,8 @@ with tab1:
                     help=st.session_state.transl["modify_condition"],
                     type="primary",
                     disabled=(nb_selected != 1)
-                    or st.session_state.disabled["modify"],
-                    # on_click=switch_button,
+                    or page.disabled["modify"],
+                    on_click=page.switch_button,
                     args=["modify"],
                 )
             with col_delete:
@@ -47,8 +42,8 @@ with tab1:
                     st.session_state.transl["delete"],
                     key="delete",
                     type="primary",
-                    disabled=st.session_state.disabled["delete"],
-                    # on_click=switch_button,
+                    disabled=page.disabled["delete"],
+                    on_click=page.switch_button,
                     args=["delete"],
                 )
                 
@@ -72,4 +67,4 @@ with tab2:
                 else:
                     msg = st.session_state.transl["mandatory_fields"]
                     st.toast(f":red[{msg}]", icon="❌")
-        st.button("Reset", type="secondary", on_click=clear_form)
+        st.button("Reset", type="secondary", on_click=page.clear_form)

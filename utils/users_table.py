@@ -42,8 +42,8 @@ def update_nb_selected_in_session_state():
     """
 
     df = st.session_state.df_buffer
-    st.session_state.nb_selected = len(df[df["Action"]])
-
+    # st.session_state.nb_selected = len(df[df["Action"]])
+    st.session_state.page.nb_selected = len(df[df["Action"]])
 
 def save_selection_in_buffer():
     """

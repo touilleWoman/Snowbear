@@ -5,26 +5,14 @@ import streamlit as st
 from .users_table import load_user_data
 
 
-def switch_button(label):
-    """
-    switch the button to the opposite state
-    When one button is clicked, all the others are set to False and disabled
-    when one button is unclicked, all the others are set to False and enabled
-    """
-    clicks = st.session_state.clicks
-    disabled = st.session_state.disabled
-    clicks[label] = not clicks[label]
-    for key in clicks.keys():
-        if key != label:
-            clicks[key] = False
-            disabled[key] = not disabled[key]
+
 
 
 def clear_cache_then_rerun():
     load_user_data.clear()
     st.session_state["df_view"] = load_user_data()
     st.session_state["df_buffer"] = load_user_data()
-    st.session_state.nb_selected = 0
+    st.session_state.page.nb_selected = 0
     st.rerun()
 
 
@@ -47,9 +35,9 @@ def new_user(user_name, first_name, last_name, email, login, password=""):
         cur.execute(query)
 
     except Exception as e:
-        st.session_state.message_tab2 = f"Error: {e}"
+        st.session_state.page.message_tab2 = f"Error: {e}"
     else:
-        st.session_state.message_tab2 = cur.fetchone()[0]
+        st.session_state.page.message_tab2 = cur.fetchone()[0]
     finally:
         cur.close()
         clear_cache_then_rerun()

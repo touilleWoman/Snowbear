@@ -1,19 +1,21 @@
 import streamlit as st
 
 from menu import menu_with_redirection
-from utils.tools import clear_form
 from utils.users_management import (
     delete_users,
     disable_users,
     enable_users,
     form_of_modifications,
     new_user,
-    switch_button,
     update_and_show_selected,
 )
 from utils.users_table import main_interaction
 
 st.set_page_config(page_title="Users", layout="wide", initial_sidebar_state="auto")
+
+# when a page is switched, all page related variables are reset, see page.py
+page = st.session_state.page
+page.switched("users")
 
 menu_with_redirection()
 
@@ -21,15 +23,6 @@ menu_with_redirection()
 tab1, tab2 = st.tabs([" 📋Users List ", "  ➕New User "])
 
 with tab1:
-    if "clicks" not in st.session_state:
-        labels = ["delete", "modify", "disable", "enable"]
-        st.session_state.clicks = {label: False for label in labels}
-        st.session_state.disabled = {label: False for label in labels}
-        # st.session_state.types = {label: "primary" for label in labels}
-    if "message" not in st.session_state:
-        st.session_state.message = []
-    if "nb_selected" not in st.session_state:
-        st.session_state.nb_selected = 0
 
     first_container = st.container(border=True)
 
@@ -37,7 +30,7 @@ with tab1:
         main_interaction()
 
     # nb_selected is updated in the main_interaction function
-    if st.session_state.nb_selected == 0:
+    if page.nb_selected == 0:
         pass
     else:
         with first_container:
@@ -49,25 +42,25 @@ with tab1:
                     st.session_state.transl["modify"],
                     help=st.session_state.transl["modify_condition"],
                     type="primary",
-                    disabled=(st.session_state.nb_selected != 1)
-                    or st.session_state.disabled["modify"],
-                    on_click=switch_button,
+                    disabled=(page.nb_selected != 1)
+                    or page.disabled["modify"],
+                    on_click=page.switch_button,
                     args=["modify"],
                 )
             with col_enable:
                 st.button(
                     st.session_state.transl["enable"],
                     type="primary",
-                    on_click=switch_button,
-                    disabled=st.session_state.disabled["enable"],
+                    on_click=page.switch_button,
+                    disabled=page.disabled["enable"],
                     args=["enable"],
                 )
             with col_disable:
                 st.button(
                     st.session_state.transl["disable"],
                     type="primary",
-                    disabled=st.session_state.disabled["disable"],
-                    on_click=switch_button,
+                    disabled=page.disabled["disable"],
+                    on_click=page.switch_button,
                     args=["disable"],
                 )
             with col_delete:
@@ -75,14 +68,14 @@ with tab1:
                     st.session_state.transl["delete"],
                     key="delete",
                     type="primary",
-                    disabled=st.session_state.disabled["delete"],
-                    on_click=switch_button,
+                    disabled=page.disabled["delete"],
+                    on_click=page.switch_button,
                     args=["delete"],
                 )
 
         second_container = st.container(border=True)
         with second_container:
-            if st.session_state.clicks["modify"]:
+            if page.clicks["modify"]:
                 st.session_state.df_view = st.session_state.df_buffer.copy(deep=True)
                 selected_row = st.session_state.df_view[
                     st.session_state.df_view["Action"]
@@ -95,7 +88,7 @@ with tab1:
                     st.write(e)
 
             # enable users
-            if st.session_state.clicks["enable"]:
+            if page.clicks["enable"]:
                 selected_rows = update_and_show_selected(st.session_state.transl["enabling"])
                 col_confirm, col_cancel = st.columns([0.1, 0.5])
                 with col_confirm:
@@ -107,14 +100,14 @@ with tab1:
                         "Cancel",
                         key="cancel",
                         type="secondary",
-                        on_click=switch_button,
+                        on_click=page.switch_button,
                         args=["enable"],
                     )
                 if enable_confirmed:
                     enable_users(selected_rows)
 
             # disable users
-            if st.session_state.clicks["disable"]:
+            if page.clicks["disable"]:
                 selected_rows = update_and_show_selected(st.session_state.transl["disabling"])
                 col_confirm, col_cancel = st.columns([0.1, 0.5])
                 with col_confirm:
@@ -126,14 +119,14 @@ with tab1:
                         "Cancel",
                         key="cancel",
                         type="secondary",
-                        on_click=switch_button,
+                        on_click=page.switch_button,
                         args=["disable"],
                     )
                 if disable_confirmed:
                     disable_users(selected_rows)
 
             # delete users
-            if st.session_state.clicks["delete"]:
+            if page.clicks["delete"]:
                 selected_rows = update_and_show_selected(
                     st.session_state.transl["deletion"]
                 )
@@ -148,29 +141,25 @@ with tab1:
                         "Cancel",
                         key="cancel",
                         type="secondary",
-                        on_click=switch_button,
+                        on_click=page.switch_button,
                         args=["delete"],
                     )
                 if delete_confirmed:
                     delete_users(selected_rows)
 
-    if st.session_state.message:
-        for msg in st.session_state.message:
+    if page.message:
+        for msg in page.message:
             if "Error" in msg:
                 st.toast(f":red[{msg}]", icon="❌")
             else:
                 st.toast(f":green[{msg}]", icon="✅")
-        st.session_state.message = []
+        page.message = []
 
 with tab2:
-    if "message_tab2" not in st.session_state:
-        st.session_state.message_tab2 = ""
-    if "form_id" not in st.session_state:
-        st.session_state.form_id = "new_user"
     st.header(st.session_state.transl["new_user"])
     container = st.container(border=True)
     with container:
-        with st.form(key=st.session_state.form_id, border=False, clear_on_submit=True):
+        with st.form(key=page.form_id, border=False, clear_on_submit=True):
             # mandatary fields
             user_name = st.text_input("User name*")
             first_name = st.text_input(st.session_state.transl["first_name"] + "*")
@@ -198,12 +187,11 @@ with tab2:
                 else:
                     msg = st.session_state.transl["mandatory_fields"]
                     st.toast(f":red[{msg}]", icon="❌")
-        st.button("Reset", type="secondary", on_click=clear_form)
+        st.button("Reset", type="secondary", on_click=page.clear_form)
 
-    if st.session_state.message_tab2:
-        msg = st.session_state.message_tab2
-        if "Error" in msg:
-            st.toast(f":red[{msg}]", icon="❌")
+    if page.message_tab2:
+        if "Error" in page.message_tab2:
+            st.toast(f":red[{page.message_tab2}]", icon="❌")
         else:
-            st.toast(f":green[{msg}]", icon="✅")
-        st.session_state.message_tab2 = ""
+            st.toast(f":green[{page.message_tab2}]", icon="✅")
+        page.message_tab2 = ""
