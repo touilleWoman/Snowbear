@@ -5,9 +5,6 @@ import streamlit as st
 from .users_table import load_user_data
 
 
-page = st.session_state.page
-
-
 def clear_cache_then_rerun():
     load_user_data.clear()
     st.session_state["df_view"] = load_user_data()
@@ -44,6 +41,7 @@ def new_user(user_name, first_name, last_name, email, login, password=""):
 
 
 def disable_users(selected_rows):
+    page = st.session_state.page
     msgs = []
     try:
         for _index, row in selected_rows.iterrows():
@@ -65,6 +63,7 @@ def disable_users(selected_rows):
 
 
 def enable_users(selected_rows):
+    page = st.session_state.page
     try:
         msgs = []
         for _index, row in selected_rows.iterrows():
@@ -86,6 +85,7 @@ def enable_users(selected_rows):
 
 
 def delete_users(selected_rows):
+    page = st.session_state.page
     try:
         msgs = []
         for _index, row in selected_rows.iterrows():
@@ -107,6 +107,7 @@ def delete_users(selected_rows):
 
 
 def modify_user(name, modified_fields):
+    page = st.session_state.page
     try:
         msgs = []
         for label, modif in modified_fields.items():

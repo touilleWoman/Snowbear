@@ -12,12 +12,12 @@ from utils.users_management import (
 from utils.users_table import main_interaction
 
 st.set_page_config(page_title="Users", layout="wide", initial_sidebar_state="auto")
+menu_with_redirection()
 
 # when a page is switched, all page related variables are reset, see page.py
 page = st.session_state.page
 page.switched("users")
 
-menu_with_redirection()
 
 
 tab1, tab2 = st.tabs([" 📋Users List ", "  ➕New User "])
@@ -34,7 +34,7 @@ with tab1:
         pass
     else:
         with first_container:
-            col_modif, col_enable, col_disable, col_delete = st.columns([1, 1, 1, 8])
+            col_modif, col_enable, col_disable, col_delete = st.columns([1, 1, 1, 6])
 
             # modify one user
             with col_modif:

@@ -5,12 +5,12 @@ from menu import menu_with_redirection
 from utils.admin_table import main_interaction, admin_new_type, show_selected, delete_admin_params
 
 st.set_page_config(page_title="Environments", layout="wide", initial_sidebar_state="auto")
+menu_with_redirection()
 
 # when a page is switched, all page related variables are reset, see page.py
 page = st.session_state.page
 page.switched("environments")
 
-menu_with_redirection()
     
 tab1, tab2 = st.tabs([" 📋Env List ", "  ➕New Env "])
 

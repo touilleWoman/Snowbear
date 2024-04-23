@@ -54,8 +54,9 @@ def delete_admin_params(selected_rows):
     except Exception as e:
         page.message.append(f"Error: {e}")
     else:
-        msg = f"{selected_rows["SHORT_DESC"]} deleted"
-        page.message.append(msg)
+        breakpoint()
+        # msg = f"{selected_rows["SHORT_DESC"]} deleted"
+        # page.message.append(msg)
         page.switch_button("delete")
     finally:
         cur.close()

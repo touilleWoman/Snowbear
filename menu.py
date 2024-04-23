@@ -3,6 +3,7 @@ import streamlit as st
 
 from footer import footer
 from charge_translations import charge_translations
+from page import Page
 
 
 def logout():
@@ -98,6 +99,8 @@ def menu_with_redirection():
     if "snow_connector" not in st.session_state:
         st.switch_page("home.py")
     else:
+        if "page" not in st.session_state:
+            st.session_state.page = Page("home")
         authenticated_menu()
         footer()
 

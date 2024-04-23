@@ -3,7 +3,6 @@ import streamlit as st
 from footer import footer
 from menu import authenticated_menu
 from snow_oauth import SnowOauth
-from page import Page
 
 def unauthenticated():
     col_hardis, col_partner = st.columns([1, 6])
@@ -30,9 +29,7 @@ st.set_page_config(
     initial_sidebar_state=sidebar_state,
 )
 
-page = Page("home")
-if "page" not in st.session_state:
-    st.session_state.page = page
+
 
 if "snow_connector" not in st.session_state:
     unauthenticated()

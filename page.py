@@ -70,3 +70,6 @@ class Page:
 
         """
         self.form_id += "1"
+        
+if __name__ == "__main__":
+    page = Page("users")
