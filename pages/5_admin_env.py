@@ -1,8 +1,13 @@
 import streamlit as st
 
 from menu import menu_with_redirection
-
-from utils.admin_table import main_interaction, admin_new_type, show_selected, delete_admin_params
+from utils.admin_table import (
+    admin_new_type,
+    delete_admin_params,
+    load_params_data,
+    main_interaction,
+    show_selected,
+)
 
 st.set_page_config(page_title="Environments", layout="wide", initial_sidebar_state="auto")
 menu_with_redirection()
@@ -14,12 +19,14 @@ page.switched("environments")
     
 tab1, tab2 = st.tabs([" 📋Env List ", "  ➕New Env "])
 
+df_params = load_params_data()
+df_env = df_params[df_params["TYPE"] == "Env"]
+
 with tab1:
     first_container = st.container(border=True)
     with first_container:
-        df = main_interaction("Env")
+        df = main_interaction(df_env)
         nb_selected = len(df[df["ACTION"]])
-        st.write(nb_selected)
         
     # nb_selected is updated in the show_selected_params function
     if nb_selected == 0:
@@ -90,11 +97,9 @@ with tab1:
 with tab2:
     st.header(st.session_state.transl["create_env"])
     container = st.container(border=True)
-    if "form_id" not in st.session_state:
-        st.session_state.form_id = "new_env"
     with container:
         with st.form(
-            key=st.session_state.form_id, border=False, clear_on_submit=True
+            key=page.form_id, border=False, clear_on_submit=True
         ):
             short_desc = st.text_input("Short descpription*")
             long_des = st.text_input("Long description*")
@@ -102,8 +107,15 @@ with tab2:
             submitted = st.form_submit_button("Submit", type="primary")
             if submitted:
                 if all_filled:
-                    admin_new_type("Env", short_desc, long_des)
+                    admin_new_type(df_env,"Env", short_desc, long_des)
                 else:
                     msg = st.session_state.transl["mandatory_fields"]
                     st.toast(f":red[{msg}]", icon="❌")
         st.button("Reset", type="secondary", on_click=page.clear_form)
+
+    if page.message_tab2:
+        if "Error" in page.message_tab2:
+            st.toast(f":red[{page.message_tab2}]", icon="❌")
+        else:
+            st.toast(f":green[{page.message_tab2}]", icon="✅")
+        page.message_tab2 = ""
