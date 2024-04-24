@@ -32,3 +32,5 @@ disabling, la désactivation
 enabling, l'activation
 disabled, Désactivé
 order, ORDRE
+order_validation, L'ordre doit être un nombre.
+no_modif, Aucune modification détectée.

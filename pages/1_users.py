@@ -81,8 +81,8 @@ with tab1:
                     st.session_state.df_view["Action"]
                 ]
                 try:
-                    with second_container:
-                        form_of_modifications(selected_row.iloc[0])
+                    # with second_container:
+                    form_of_modifications(selected_row.iloc[0])
                 except Exception as e:
                     st.write(f"selected_row: {selected_row}")
                     st.write(e)

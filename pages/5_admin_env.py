@@ -7,6 +7,7 @@ from utils.admin_table import (
     load_params_data,
     main_interaction,
     show_selected,
+    form_of_modifications,
 )
 
 st.set_page_config(page_title="Environments", layout="wide", initial_sidebar_state="auto")
@@ -58,12 +59,11 @@ with tab1:
         with second_container:
             selected_rows = df[df["ACTION"]]
             
-            # if page.clicks["modify"]:
-                # try:
-                #     form_of_modifications(selected_row.iloc[0])
-                # except Exception as e:
-                #     st.write(f"selected_row: {selected_row}")
-                #     st.write(e)
+            if page.clicks["modify"]:
+                try:
+                    form_of_modifications(selected_rows.iloc[0])
+                except Exception as e:
+                    st.write(e)
 
             # delete users
             if page.clicks["delete"]:

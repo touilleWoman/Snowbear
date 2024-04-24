@@ -32,3 +32,5 @@ disabling, disabling
 enabling, enabling
 disabled, Disabled
 order, ORDER
+order_validation, Order must be a number
+no_modif, No modification detected
