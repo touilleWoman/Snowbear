@@ -97,17 +97,19 @@ with tab1:
 with tab2:
     st.header(st.session_state.transl["create_env"])
     container = st.container(border=True)
+    prefilled_order = int(df_env["ORDER"].max()) + 1
     with container:
         with st.form(
             key=page.form_id, border=False, clear_on_submit=True
         ):
+            order = st.text_input("Order*", value=prefilled_order)
             short_desc = st.text_input("Short descpription*")
             long_des = st.text_input("Long description*")
-            all_filled = short_desc and long_des
+            all_filled = short_desc and long_des and order
             submitted = st.form_submit_button("Submit", type="primary")
             if submitted:
                 if all_filled:
-                    admin_new_type(df_env,"Env", short_desc, long_des)
+                    admin_new_type(df_env,"Env", short_desc, long_des, order)
                 else:
                     msg = st.session_state.transl["mandatory_fields"]
                     st.toast(f":red[{msg}]", icon="❌")

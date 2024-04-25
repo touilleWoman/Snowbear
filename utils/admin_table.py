@@ -31,12 +31,12 @@ def main_interaction(df):
     :return: The updated DataFrame after editing.
     """
 
-    sorted_df = df.sort_values(by=["ORDRE"])
+    sorted_df = df.sort_values(by=["ORDER"])
     updated_df = st.data_editor(
         sorted_df,
         hide_index=True,
         column_order=(
-            "ORDRE",
+            "ORDER",
             "ID",
             "TYPE",
             "SHORT_DESC",
@@ -75,16 +75,15 @@ def delete_admin_params(selected_rows):
         st.rerun()
 
 
-def admin_new_type(df, type, short_desc, long_desc):
+def admin_new_type(df, type, short_desc, long_desc, order):
     short_desc = html.escape(short_desc)
     long_desc = html.escape(long_desc)
     cur = st.session_state.snow_connector.cursor()
     try:
-        ordre = int(df["ORDRE"].max()) + 1
         # use qmark binding(server side) to avoid sql injection
         cur.execute(
-            "INSERT INTO STREAMLIT.SNOWBEAR.parameterization (ORDRE, TYPE, SHORT_DESC, LONG_DESC, MODIFIER, MODIFICATION) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP())",
-            (ordre, type, short_desc, long_desc, get_user()),
+            """INSERT INTO STREAMLIT.SNOWBEAR.parameterization (TYPE, SHORT_DESC, LONG_DESC, MODIFIER, MODIFICATION, "ORDER") VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP(), ?)""",
+            (type, short_desc, long_desc, get_user(), order),
         )
     except Exception as e:
         st.session_state.page.message_tab2 = f"Error: {e}"
@@ -97,7 +96,7 @@ def admin_new_type(df, type, short_desc, long_desc):
 
 
 def show_selected(selected_rows, action_label):
-    selected_rows = selected_rows.drop(columns=["ACTION", "ID", "ORDRE"])
+    selected_rows = selected_rows.drop(columns=["ACTION", "ID", "ORDER"])
     if st.session_state.transl["key"] == "en":
         st.warning(f"Do you confirm the {action_label} of the following parameters?")
     else:
@@ -112,23 +111,25 @@ def show_selected(selected_rows, action_label):
 def form_of_modifications(row):
     short_desc = row["SHORT_DESC"]
     long_desc = row["LONG_DESC"]
-    ordre = row["ORDRE"]
+    order = row["ORDER"]
     id = row["ID"]
     with st.form(key="modify_env"):
         st.text_input("ID", value=id, disabled=True)
-        m_ordre = st.text_input("Order", value=ordre)
+        m_order = st.text_input("Order", value=order)
         m_short_desc = st.text_input("Short descpription", value=short_desc)
         m_long_desc = st.text_input("Long description", value=long_desc)
         submitted = st.form_submit_button("Submit", type="primary")
         if not submitted:
             return
         try:
-            m_ordre = int(m_ordre)
+            m_order = int(m_order)
         except ValueError:
             st.toast(f":red[{st.session_state.transl['order_validation']}]", icon="❌")
             return
+        m_short_desc = html.escape(m_short_desc)
+        m_long_desc = html.escape(m_long_desc)
         pairs = [
-            (ordre, m_ordre, "ORDRE"),
+            (order, m_order, "\"ORDER\""), # ORDER is a reserved keyword in SQL, so it needs to be escaped
             (short_desc, m_short_desc, "SHORT_DESC"),
             (long_desc, m_long_desc, "LONG_DESC"),
         ]
@@ -136,25 +137,26 @@ def form_of_modifications(row):
         if len(modified_fields) == 0:
             st.toast(f":red[{st.session_state.transl['no_modif']}]", icon="❌")
             return
-        modify_admin_params(id, m_short_desc, m_long_desc)
+        modify_admin_params(id, modified_fields)
 
 
-def modify_admin_params(id, short_desc, long_desc):
+def modify_admin_params(id, modified_fields):
     id = int(id)
     page = st.session_state.page
     try:
-        short_desc = html.escape(short_desc)
-        long_desc = html.escape(long_desc)
+        
+        sql_set_clause = ', '.join(f"{key} = ?" for key in modified_fields.keys())
+        sql_values = tuple(modified_fields.values())
+        sql_query = f"UPDATE STREAMLIT.SNOWBEAR.PARAMETERIZATION SET {sql_set_clause} WHERE ID = ?"
+        sql_values += (id,)  # Append the ID to the values tuple for the WHERE clause
+        
         cur = st.session_state.snow_connector.cursor()
         # use qmark binding to avoid sql injection
-        cur.execute(
-            "UPDATE STREAMLIT.SNOWBEAR.parameterization SET SHORT_DESC = ?, LONG_DESC = ? WHERE ID = ?",
-            (short_desc, long_desc, id),
-        )
+        cur.execute(sql_query, sql_values)
     except Exception as e:
         page.message.append(f"Error: {e}")
     else:
-        page.message.append(f"Parameter {short_desc} is modified successfully")
+        page.message.append(f"Parameter with id {id} is modified successfully")
         page.switch_button("modify")
         load_params_data.clear()
         st.rerun()
