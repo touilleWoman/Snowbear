@@ -1,7 +1,7 @@
 import streamlit as st
 
 from menu import menu_with_redirection
-from utils.rights_table import update_rights_according_to_params
+from utils.rights_table import sync_rights_table_with_params
 
 st.set_page_config(page_title="Environments", layout="wide", initial_sidebar_state="auto")
 menu_with_redirection()
@@ -11,7 +11,7 @@ menu_with_redirection()
 page = st.session_state.page
 page.switched("rights")
 
-df = update_rights_according_to_params()
+df = sync_rights_table_with_params()
 envs = df["ENVIRONMENT"].unique()
 
 env = st.selectbox("Choose an environment", envs)

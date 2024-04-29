@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import itertools
-
+from snowflake.connector.pandas_tools import write_pandas
 from .admin_table import load_params_data
 
 
@@ -21,25 +21,22 @@ def load_rights_data():
     return df
 
 
-def update_rights_according_to_params():
+def new_rights_table_according_to_params(df, combinations):
     """
     Update the rights table based on the parameters table.
 
-    This function loads the parameters data, extracts the environments, zones, and roles from the data,
-    generates all possible combinations of these values, and filters the rights table to keep only the rows
-    with combinations found in the generated combinations set. It then finds the missing combinations and adds
-    them to the filtered rights table. Finally, it returns the updated rights table.
+    This function filters the rights table to keep only the rows
+    found in the combinations set. It then finds the missing combinations and adds
+    them to the filtered rights table with the value rights = "-". 
+    Finally, it returns the updated rights table.
+
+    Args:
+        df (pandas.DataFrame): The original rights table.
+        combinations (set): all possible combinations of environments, zones, and roles found in the parameters table.
 
     Returns:
         pandas.DataFrame: The updated rights table.
     """
-    
-    df_params = load_params_data()
-    envs = df_params[df_params['TYPE'] == 'Env']['SHORT_DESC'].tolist()
-    zones = df_params[df_params['TYPE'] == 'Zone']['SHORT_DESC'].tolist()
-    roles = df_params[df_params['TYPE'] == 'Role']['SHORT_DESC'].tolist()
-    combinations = set(itertools.product(envs, zones, roles))
-    df = load_rights_data()
     
     # Filter the DataFrame to keep only rows with combinations found in combinations_set
     df_filtered = df[df.apply(lambda row: (row['ENVIRONMENT'], row['ZONE'], row['ROLE']) in combinations, axis=1)]
@@ -58,3 +55,53 @@ def update_rights_according_to_params():
         df_new_rows = pd.DataFrame(new_rows)
         df_filtered = pd.concat([df_filtered, df_new_rows], ignore_index=True)
     return df_filtered
+
+def sync_rights_table_with_params():
+    """
+    Synchronize the rights table in Snowflake with the parameter settings.
+
+    This function loads the current parameter settings and compares them with the existing rights
+    table in Snowflake. If there are differences, it updates the rights table to reflect these settings:
+    - It retains only those rights that match the parameter combinations.
+    - It adds new default rights for parameter combinations that are missing in the rights table.
+    - The rights table is then overwritten in Snowflake with the updated data.
+
+    This ensures that the rights table in Snowflake is fully aligned with the latest parameter settings,
+    supporting consistent access control and permissions management.
+
+    Returns:
+        pandas.DataFrame: The updated rights table, reflecting the latest parameter settings.
+    """
+    
+    df_params = load_params_data()
+    param_envs = set(df_params[df_params['TYPE'] == 'Env']['SHORT_DESC'].unique())
+    param_zones = set(df_params[df_params['TYPE'] == 'Zone']['SHORT_DESC'].unique())
+    param_roles = set(df_params[df_params['TYPE'] == 'Role']['SHORT_DESC'].unique())
+    
+    df_rights = load_rights_data()
+    rights_env = set(df_rights['ENVIRONMENT'].unique())
+    rights_zone = set(df_rights['ZONE'].unique())
+    rights_role = set(df_rights['ROLE'].unique())
+    
+    
+    if all([param_envs == rights_env, param_zones == rights_zone, param_roles == rights_role]):
+        # No need to update the rights table
+        return df_rights
+    
+    combinations = set(itertools.product(param_envs, param_zones, param_roles))
+    
+    df = new_rights_table_according_to_params(df_rights, combinations)
+
+    cur = st.session_state.snow_connector.cursor()
+    try:
+        cur.execute("TRUNCATE TABLE STREAMLIT.SNOWBEAR.rights")
+        success, nchunks, nrows, _ = write_pandas(st.session_state.snow_connector, df, 'RIGHTS', database='STREAMLIT', schema='SNOWBEAR')
+        print(f"Success: {success}, Chunks: {nchunks}, Rows inserted: {nrows}")
+    except Exception as e:
+        st.error(e)
+    finally:
+        if not success:
+            st.error("An error occurred while writing the new rights table to Snowflake.")
+        load_rights_data.clear()
+        cur.close()
+        return df
