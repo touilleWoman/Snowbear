@@ -1,14 +1,15 @@
-import streamlit as st
-import pandas as pd
 import itertools
+
+import pandas as pd
+import streamlit as st
 from snowflake.connector.pandas_tools import write_pandas
+
 from .admin_table import load_params_data
 
 
 @st.cache_data
 def load_rights_data():
-    """
-    """
+    """ """
     cur = st.session_state.snow_connector.cursor()
     try:
         cur.execute("SELECT * from STREAMLIT.SNOWBEAR.rights")
@@ -27,7 +28,7 @@ def new_rights_table_according_to_params(df, combinations):
 
     This function filters the rights table to keep only the rows
     found in the combinations set. It then finds the missing combinations and adds
-    them to the filtered rights table with the value rights = "-". 
+    them to the filtered rights table with the value rights = "-".
     Finally, it returns the updated rights table.
 
     Args:
@@ -37,24 +38,42 @@ def new_rights_table_according_to_params(df, combinations):
     Returns:
         pandas.DataFrame: The updated rights table.
     """
-    
+
     # Filter the DataFrame to keep only rows with combinations found in combinations_set
-    df_filtered = df[df.apply(lambda row: (row['ENVIRONMENT'], row['ZONE'], row['ROLE']) in combinations, axis=1)]
+    df_filtered = df[
+        df.apply(
+            lambda row: (row["ENVIRONMENT"], row["ZONE"], row["ROLE"]) in combinations,
+            axis=1,
+        )
+    ]
 
     # Find missing combinations and add them
-    max_id = df['ID'].max()
+    max_id = df["ID"].max()
     new_rows = []
-    
+
     for combination in combinations:
-        if df[(df['ENVIRONMENT'] == combination[0]) & (df['ZONE'] == combination[1]) & (df['ROLE'] == combination[2])].empty:
+        if df[
+            (df["ENVIRONMENT"] == combination[0])
+            & (df["ZONE"] == combination[1])
+            & (df["ROLE"] == combination[2])
+        ].empty:
             max_id += 1  # Update max_id for each new row
-            new_rows.append({'ID': max_id, 'ENVIRONMENT': combination[0], 'ZONE': combination[1], 'ROLE': combination[2], 'RIGHTS': '-'})
-            
+            new_rows.append(
+                {
+                    "ID": max_id,
+                    "ENVIRONMENT": combination[0],
+                    "ZONE": combination[1],
+                    "ROLE": combination[2],
+                    "RIGHTS": "-",
+                }
+            )
+
     # Create a DataFrame from new_rows and append it to df_filtered
     if new_rows:
         df_new_rows = pd.DataFrame(new_rows)
         df_filtered = pd.concat([df_filtered, df_new_rows], ignore_index=True)
     return df_filtered
+
 
 def sync_rights_table_with_params():
     """
@@ -72,36 +91,49 @@ def sync_rights_table_with_params():
     Returns:
         pandas.DataFrame: The updated rights table, reflecting the latest parameter settings.
     """
-    
+
     df_params = load_params_data()
-    param_envs = set(df_params[df_params['TYPE'] == 'Env']['SHORT_DESC'].unique())
-    param_zones = set(df_params[df_params['TYPE'] == 'Zone']['SHORT_DESC'].unique())
-    param_roles = set(df_params[df_params['TYPE'] == 'Role']['SHORT_DESC'].unique())
-    
+    param_envs = set(df_params[df_params["TYPE"] == "Env"]["SHORT_DESC"])
+    param_zones = set(df_params[df_params["TYPE"] == "Zone"]["SHORT_DESC"])
+    param_roles = set(df_params[df_params["TYPE"] == "Role"]["SHORT_DESC"])
+
     df_rights = load_rights_data()
-    rights_env = set(df_rights['ENVIRONMENT'].unique())
-    rights_zone = set(df_rights['ZONE'].unique())
-    rights_role = set(df_rights['ROLE'].unique())
-    
-    
-    if all([param_envs == rights_env, param_zones == rights_zone, param_roles == rights_role]):
+    rights_env = set(df_rights["ENVIRONMENT"].unique())
+    rights_zone = set(df_rights["ZONE"].unique())
+    rights_role = set(df_rights["ROLE"].unique())
+
+    if all(
+        [
+            param_envs == rights_env,
+            param_zones == rights_zone,
+            param_roles == rights_role,
+        ]
+    ):
         # No need to update the rights table
         return df_rights
-    
+
     combinations = set(itertools.product(param_envs, param_zones, param_roles))
-    
+
     df = new_rights_table_according_to_params(df_rights, combinations)
 
     cur = st.session_state.snow_connector.cursor()
     try:
         cur.execute("TRUNCATE TABLE STREAMLIT.SNOWBEAR.rights")
-        success, nchunks, nrows, _ = write_pandas(st.session_state.snow_connector, df, 'RIGHTS', database='STREAMLIT', schema='SNOWBEAR')
+        success, nchunks, nrows, _ = write_pandas(
+            st.session_state.snow_connector,
+            df,
+            "RIGHTS",
+            database="STREAMLIT",
+            schema="SNOWBEAR",
+        )
         print(f"Success: {success}, Chunks: {nchunks}, Rows inserted: {nrows}")
     except Exception as e:
         st.error(e)
     finally:
         if not success:
-            st.error("An error occurred while writing the new rights table to Snowflake.")
+            st.error(
+                "An error occurred while writing the new rights table to Snowflake."
+            )
         load_rights_data.clear()
         cur.close()
         return df

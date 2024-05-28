@@ -2,14 +2,11 @@ import streamlit as st
 from htbuilder import HtmlElement, div, em, a, p, img, styles
 from htbuilder.units import percent, px
 
-
 def image(src_as_string, **style):
     return img(src=src_as_string, style=styles(**style))
 
-
 def link(link, text, **style):
     return a(_href=link, _target="_blank", style=styles(**style))(text)
-
 
 def layout(*args):
 
@@ -17,50 +14,37 @@ def layout(*args):
     <style>
       # MainMenu {visibility: hidden;}
       footer {visibility: hidden;}
-     .stApp { bottom: 105px; }
+      .stApp { padding-bottom: 105px; }
     </style>
     """
 
     style_div = styles(
         position="fixed",
-        left= 0,
+        left=0,
         bottom=0,
         margin=px(0, 0, 0, 0),
         width=percent(100),
         color="black",
         text_align="center",
         height="auto",
-        opacity=1
+        opacity=1,
+        z_index=1000
     )
-
-    # style_hr = styles(
-    #     display="block",
-    #     margin=px(8, 8, "auto", "auto"),
-    #     border_style="inset",
-    #     border_width=px(2)
-    # )
 
     body = p()
     foot = div(
         style=style_div
-    )(
-        # hr(
-        #     style=style_hr
-        # ),
-        body
-    )
+    )(body)
 
     st.markdown(style, unsafe_allow_html=True)
 
     for arg in args:
         if isinstance(arg, str):
             body(arg)
-
         elif isinstance(arg, HtmlElement):
             body(arg)
 
     st.markdown(str(foot), unsafe_allow_html=True)
-
 
 def footer():
     myargs = [
@@ -71,7 +55,6 @@ def footer():
         link("https://www.hardis-group.com/en", "Hardis Group"),
     ]
     layout(*myargs)
-
 
 if __name__ == "__main__":
     footer()
