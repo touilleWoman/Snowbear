@@ -11,6 +11,8 @@ environments, Environments
 rights, Rights
 modifier, MODIFIER
 create_env, Create a new environment
+create_zone, Create a new zone
+create_role, Create a new role
 pwd_mismatch, Passwords do not match. Please try again.
 pwd_len, Password must be at least 8 characters long.
 pwd_uppercase, At least one uppercase letter is required for password.

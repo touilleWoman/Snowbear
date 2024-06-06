@@ -11,6 +11,8 @@ environments, Environnements
 rights, Droits
 modifier, MODIFICATEUR
 create_env, Créer un nouvel environnement
+create_zone, Créer une nouvelle zone
+create_role, Créer un nouveau role
 pwd_mismatch, Les mots de passe saisis ne correspondent pas. Veuillez réessayer.
 pwd_len, Le mot de passe doit contenir au moins 8 caractères.
 pwd_uppercase, Au moins une lettre majuscule est requise pour le mot de passe.

@@ -15,7 +15,7 @@ menu_with_redirection()
 
 # when a page is switched, all page related variables are reset, see page.py
 page = st.session_state.page
-page.switched("environments")
+page.switched("admin_environments")
 
     
 tab1, tab2 = st.tabs([" 📋Env List ", "  ➕New Env "])

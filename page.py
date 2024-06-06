@@ -25,10 +25,16 @@ class Page:
             pass
         else:
             self.name = present_page
-            if self.name == "environments":
-                self.init_env()
+            if self.name == "admin_environments":
+                self.init_admin_env()
             elif self.name == "users":
                 self.init_users()
+            elif self.name == "admin_zones":
+                self.init_admin_zone()
+            elif self.name == "admin_roles":
+                self.init_admin_roles()
+            elif self.name == "admin_rights":
+                self.init_admin_rights()
 
     def init_users(self):
         labels = ["delete", "modify", "disable", "enable"]
@@ -39,13 +45,36 @@ class Page:
         self.nb_selected = 0
         self.form_id = "new_user"
 
-    def init_env(self):
+    def init_admin_env(self):
         labels = ["delete", "modify"]
         self.clicks = {label: False for label in labels}
         self.disabled = {label: False for label in labels}
         self.message = []
         self.message_tab2 = ""
         self.form_id = "new_env"
+        
+    def init_admin_zone(self):
+        labels = ["delete", "modify"]
+        self.clicks = {label: False for label in labels}
+        self.disabled = {label: False for label in labels}
+        self.message = []
+        self.message_tab2 = ""
+        self.form_id = "new_zone"
+    
+    def init_admin_roles(self):
+        labels = ["delete", "modify"]
+        self.clicks = {label: False for label in labels}
+        self.disabled = {label: False for label in labels}
+        self.message = []
+        self.message_tab2 = ""
+        self.form_id = "new_role"
+    
+    def init_admin_rights(self):
+        labels = ["modify"]
+        self.clicks = {label: False for label in labels}
+        self.disabled = {label: False for label in labels}
+        self.message = []
+        self.form_id = "new_right"
 
     def switch_button(self, label):
         """
