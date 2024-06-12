@@ -144,7 +144,6 @@ def modify_admin_params(id, modified_fields):
     id = int(id)
     page = st.session_state.page
     try:
-        
         sql_set_clause = ', '.join(f"{key} = ?" for key in modified_fields.keys())
         sql_values = tuple(modified_fields.values())
         sql_query = f"UPDATE STREAMLIT.SNOWBEAR.PARAMETERIZATION SET {sql_set_clause} WHERE ID = ?"

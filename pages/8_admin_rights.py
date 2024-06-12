@@ -72,7 +72,38 @@ with second_container:
         
         modif_confirmed = st.button("Confirm", key="confirm", type="primary")
         if modif_confirmed:
-            pass
-        
-        
+            # Extract the changes and display
+            changes_list = []
+            for idx, row in modified_data.iterrows():
+                for col in row.index:
+                    original_value = df_view.loc[idx, col]
+                    new_value = df_updated.loc[idx, col]
+                    if original_value != new_value:
+                        changes_list.append({
+                            'Row': idx,
+                            'Column': col,
+                            'Value': new_value
+                        })
+
+            # Display the changes
+            # st.write(changes_list)
+                   
+            # Update the database
+            cur = st.session_state.snow_connector.cursor()
+            for change in changes_list:
+                role = change['Row']
+                zone = change['Column']
+                new_value = change['Value']
+                env = env
+                query = f"""
+                UPDATE STREAMLIT.SNOWBEAR.RIGHTS
+                SET RIGHTS = '{new_value}'
+                WHERE ENVIRONMENT = '{env}' AND ZONE = '{zone}' AND "ROLE" = '{role}'
+                """
+                try:
+                    cur.execute(query, (new_value, env, zone, role))
+                except Exception as e:
+                    st.error(e)
+            cur.close()
+
         
