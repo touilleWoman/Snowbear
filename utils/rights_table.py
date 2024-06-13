@@ -158,7 +158,6 @@ def update_modified_rights_table(changes_list):
         finally:
             cur.close()
             load_rights_data.clear()
-            st.session_state.page.message.append("Rerun the app to apply the changes.")
-            st.session_state.page.switch_button("modify")
+            st.session_state.page.clicks["modify"] = False
             st.rerun()
             
