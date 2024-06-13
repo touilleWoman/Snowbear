@@ -1,7 +1,10 @@
 import streamlit as st
 
 from menu import menu_with_redirection
-from utils.rights_table import sync_rights_table_with_params
+from utils.rights_table import (
+    sync_rights_table_with_params,
+    update_modified_rights_table,
+)
 from utils.admin_table import load_params_data
 
 st.set_page_config(
@@ -59,7 +62,6 @@ with second_container:
         modified_data = df_updated[modified_rows]
 
         # Applying the highlight function
-        # Function to highlight changes
         def highlight_changes(x):
             original = df_view.loc[x.name]
             return [
@@ -69,7 +71,7 @@ with second_container:
 
         detailed_changes = modified_data.style.apply(highlight_changes, axis=1)
         st.write(detailed_changes)
-        
+
         modif_confirmed = st.button("Confirm", key="confirm", type="primary")
         if modif_confirmed:
             # Extract the changes and display
@@ -79,31 +81,20 @@ with second_container:
                     original_value = df_view.loc[idx, col]
                     new_value = df_updated.loc[idx, col]
                     if original_value != new_value:
-                        changes_list.append({
-                            'Row': idx,
-                            'Column': col,
-                            'Value': new_value
-                        })
+                        changes_list.append(
+                            {
+                                "Role": idx,
+                                "Zone": col,
+                                "Value": new_value,
+                                "Enviroment": env,
+                            }
+                        )
+            update_modified_rights_table(changes_list)
 
-            # Display the changes
-            # st.write(changes_list)
-                   
-            # Update the database
-            cur = st.session_state.snow_connector.cursor()
-            for change in changes_list:
-                role = change['Row']
-                zone = change['Column']
-                new_value = change['Value']
-                env = env
-                query = f"""
-                UPDATE STREAMLIT.SNOWBEAR.RIGHTS
-                SET RIGHTS = '{new_value}'
-                WHERE ENVIRONMENT = '{env}' AND ZONE = '{zone}' AND "ROLE" = '{role}'
-                """
-                try:
-                    cur.execute(query, (new_value, env, zone, role))
-                except Exception as e:
-                    st.error(e)
-            cur.close()
-
-        
+if page.message:
+    for msg in page.message:
+        if "Error" in msg:
+            st.toast(f":red[{msg}]", icon="❌")
+        else:
+            st.toast(f":green[{msg}]", icon="✅")
+    page.message = []

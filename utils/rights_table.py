@@ -137,3 +137,28 @@ def sync_rights_table_with_params():
         load_rights_data.clear()
         cur.close()
         return df
+    
+    
+def update_modified_rights_table(changes_list):
+
+    cur = st.session_state.snow_connector.cursor()
+    for change in changes_list:
+        query = f"""
+        UPDATE STREAMLIT.SNOWBEAR.RIGHTS
+        SET RIGHTS = '{change["Value"]}'
+        WHERE ENVIRONMENT = '{change["Enviroment"]}' AND ZONE = '{change["Zone"]}' AND "ROLE" = '{change["Role"]}'
+        """
+        try:
+            cur.execute(query)
+        except Exception as e:
+            st.session_state.page.message.append(f"Error: {e}")
+        else:
+            st.session_state.page.message.append(f"{change} updated successfully")
+            st.session_state.page.switch_button("modify")
+        finally:
+            cur.close()
+            load_rights_data.clear()
+            st.session_state.page.message.append("Rerun the app to apply the changes.")
+            st.session_state.page.switch_button("modify")
+            st.rerun()
+            
